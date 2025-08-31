@@ -1,0 +1,16 @@
+meta {
+  name: Invoice Status
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base}}finance/invoices/stats-summary?from=2025-07-11&to=2025-07-15
+  body: none
+  auth: inherit
+}
+
+params:query {
+  from: 2025-07-11
+  to: 2025-07-15
+}

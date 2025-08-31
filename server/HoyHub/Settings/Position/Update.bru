@@ -1,0 +1,18 @@
+meta {
+  name: Update
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base}}positions/65a8191d-5815-4b5a-aac1-10595058d5b0/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Accountant",
+    "description": "Accou. Manager"
+  }
+}

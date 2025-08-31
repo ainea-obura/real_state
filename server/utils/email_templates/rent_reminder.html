@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Rent payment reminder notification" />
+    <meta name="keywords" content="rent, payment, reminder, invoice" />
+    <title>Rent Reminder</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+      .container {
+        width: 800px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        color: white;
+        padding: 30px;
+        position: relative;
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .header.overdue {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      }
+      .header.upcoming {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      }
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+      }
+      .company-logo {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 8px;
+        background-color: white;
+        padding: 5px;
+      }
+      .logo-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .logo-text h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .logo-text p {
+        margin: 5px 0 0 0;
+        font-size: 12px;
+        opacity: 0.8;
+        color: white;
+      }
+      .reminder-title-section {
+        text-align: right;
+        flex: 1;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 16px;
+        font-weight: 500;
+      }
+      .contact-bar {
+        background-color: #f8fafc;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 14px;
+        color: #64748b;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex: 1;
+        justify-content: center;
+      }
+      .contact-item span {
+        font-weight: 500;
+      }
+      .content {
+        padding: 30px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .billing-section {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        gap: 30px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .billed-to,
+      .payment-to {
+        flex: 1;
+        background-color: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        box-sizing: border-box;
+        min-width: 0;
+      }
+      .billed-to h3,
+      .payment-to h3 {
+        color: #1e3a8a;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .billed-to p,
+      .payment-to p {
+        margin: 8px 0;
+        color: #374151;
+        font-size: 14px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      .billed-to strong,
+      .payment-to strong {
+        color: #1f2937;
+        font-weight: 600;
+      }
+      .reminder-details {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .detail-item {
+        text-align: center;
+        flex: 1;
+        min-width: 0;
+      }
+      .detail-label {
+        font-size: 12px;
+        color: #6b7280;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .detail-value {
+        font-size: 16px;
+        color: #1f2937;
+        font-weight: 600;
+        margin-top: 5px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      .reminder-message {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 30px 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .reminder-message.overdue {
+        background-color: #fee2e2;
+        border-color: #fecaca;
+      }
+      .reminder-message.upcoming {
+        background-color: #f0fdf4;
+        border-color: #dcfce7;
+      }
+      .reminder-message h3 {
+        color: #0369a1;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .reminder-message.overdue h3 {
+        color: #dc2626;
+      }
+      .reminder-message.upcoming h3 {
+        color: #059669;
+      }
+      .reminder-message p {
+        margin: 10px 0;
+        color: #1e40af;
+        font-weight: 500;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      .reminder-message.overdue p {
+        color: #dc2626;
+      }
+      .reminder-message.upcoming p {
+        color: #059669;
+      }
+      .reminder-message strong {
+        color: #1e3a8a;
+      }
+      .reminder-message.overdue strong {
+        color: #dc2626;
+      }
+      .reminder-message.upcoming strong {
+        color: #059669;
+      }
+      .important-info {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 30px 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .important-info h4 {
+        color: #1e3a8a;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .important-info.overdue h4 {
+        color: #dc2626;
+      }
+      .important-info.upcoming h4 {
+        color: #059669;
+      }
+      .important-info ul {
+        margin: 10px 0;
+        padding-left: 20px;
+        color: #374151;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .important-info li {
+        margin: 8px 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      .important-info.overdue li {
+        color: #dc2626;
+      }
+      .important-info.upcoming li {
+        color: #059669;
+      }
+      .footer {
+        background-color: #f8fafc;
+        padding: 30px;
+        text-align: center;
+        border-top: 1px solid #e2e8f0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .footer p {
+        margin: 5px 0;
+        color: #64748b;
+        font-size: 14px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      .footer strong {
+        color: #1e3a8a;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .status-overdue {
+        background-color: #fee2e2;
+        color: #dc2626;
+      }
+      .status-upcoming {
+        background-color: #dcfce7;
+        color: #059669;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header {% if reminder_type == 'overdue' %}overdue{% elif reminder_type == 'upcoming' %}upcoming{% endif %}">
+        <div class="logo-section">
+          {% if company_logo_url %}
+            <img src="{{ company_logo_url }}"
+                 alt="Company Logo"
+                 class="company-logo"
+                 width="60"
+                 height="60" />
+          {% else %}
+            <div class="company-logo">{{ company_name|first }}</div>
+          {% endif %}
+          <div class="logo-text">
+            <h2>{{ company_name }}</h2>
+            <p>{{ company_address }}</p>
+          </div>
+        </div>
+        <div class="reminder-title-section">
+          <h1>
+            {% if reminder_type == 'overdue' %}
+              OVERDUE
+            {% else %}
+              REMINDER
+            {% endif %}
+          </h1>
+          <p>{{ invoice_number }}</p>
+        </div>
+      </div>
+      <!-- Contact Bar -->
+      <div class="contact-bar">
+        <div class="contact-item">
+          <span>🌐</span>
+          <span>{{ company_website }}</span>
+        </div>
+        <div class="contact-item">
+          <span>📧</span>
+          <span>{{ company_email }}</span>
+        </div>
+        <div class="contact-item">
+          <span>📞</span>
+          <span>{{ company_phone }}</span>
+        </div>
+      </div>
+      <div class="content">
+        <!-- Billing Information -->
+        <div class="billing-section">
+          <div class="billed-to">
+            <h3>Reminder for:</h3>
+            <p>
+              <strong>{{ tenant_name }}</strong>
+            </p>
+            <p>{{ property_name }}</p>
+            <p>{{ tenant_email }}</p>
+          </div>
+          <div class="payment-to">
+            <h3>Payment to:</h3>
+            <p>
+              <strong>{{ company_name }}</strong>
+            </p>
+            <p>{{ company_address }}</p>
+          </div>
+        </div>
+        <!-- Reminder Details -->
+        <div class="reminder-details">
+          <div class="detail-item">
+            <div class="detail-label">Invoice Number</div>
+            <div class="detail-value">{{ invoice_number }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Due Date</div>
+            <div class="detail-value">{{ due_date }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Amount Due</div>
+            <div class="detail-value">{{ total_amount }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">
+              <span class="status-badge status-{{ reminder_type }}">
+                {% if reminder_type == 'overdue' %}
+                  ⚠️ OVERDUE
+                {% else %}
+                  📅 UPCOMING
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- Reminder Message -->
+        <div class="reminder-message {% if reminder_type == 'overdue' %}overdue{% elif reminder_type == 'upcoming' %}upcoming{% endif %}">
+          <h3>
+            {% if reminder_type == 'overdue' %}
+              ⚠️ Payment Overdue
+            {% else %}
+              📅 Payment Due Soon
+            {% endif %}
+          </h3>
+          {% if reminder_type == 'overdue' %}
+            <p>
+              <strong>Your rent payment is overdue.</strong> Your invoice {{ invoice_number }} 
+              was due on {{ due_date }} and remains unpaid.
+            </p>
+            <p>
+              <strong>Total Amount Due:</strong> {{ total_amount }}
+            </p>
+            <p>
+              Please settle this payment as soon as possible to avoid any additional charges or penalties.
+            </p>
+          {% else %}
+            <p>
+              <strong>Friendly reminder:</strong> Your rent payment is due soon. Your invoice {{ invoice_number }} 
+              is due on {{ due_date }}.
+            </p>
+            <p>
+              <strong>Total Amount Due:</strong> {{ total_amount }}
+            </p>
+            <p>
+              Please plan to make your payment on time to avoid any late fees.
+            </p>
+          {% endif %}
+        </div>
+        <!-- Important Information -->
+        <div class="important-info {% if reminder_type == 'overdue' %}overdue{% elif reminder_type == 'upcoming' %}upcoming{% endif %}">
+          <h4>📋 Important Information</h4>
+          <ul>
+            {% if reminder_type == 'overdue' %}
+              <li>Late payments may incur additional charges or penalties</li>
+              <li>Please include your invoice number as a reference when making payments</li>
+              <li>Contact us immediately if you have any payment difficulties</li>
+            {% else %}
+              <li>Please include your invoice number as a reference when making payments</li>
+              <li>Payment is due by {{ due_date }}</li>
+              <li>Late payments may incur additional charges</li>
+            {% endif %}
+            <li>For payment inquiries, contact {{ company_email }}</li>
+          </ul>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="footer">
+        <p>
+          <strong>{{ company_name }}</strong>
+        </p>
+        <p>Professional real estate management solutions</p>
+        <p style="margin-top: 20px; font-size: 12px; color: #94a3b8">
+          This reminder was sent to {{ tenant_email }}. If you have any questions, please contact our support team.
+        </p>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 10px">
+          Invoice #{{ invoice_number }} | Due Date: {{ due_date }}
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

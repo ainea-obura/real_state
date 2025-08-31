@@ -1,0 +1,70 @@
+# Django Settings
+DJANGO_SECRET_KEY=VgFIYyGdr-PZL51evIIItLNMzDPgG0BYD-J_eKywzAQ=
+SECRET_KEY=mP7Y5K6QGJ8Mjc0Qax4cJPrzVfW-q1wClwTf7JK2F3E=
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database settings
+DB_NAME=hoyhub
+DB_USER=postgres
+DB_PASSWORD=mansuurtech101!
+DB_HOST=localhost
+DB_PORT=5432
+ENVIROMENT=development
+
+# Redis settings
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_PASSWORD
+ENVIRONMENT=development
+
+# bugsink
+CREATE_SUPERUSER=hoyhub:@hoyHub@@252
+BUGSINK_KEY=Ht19dBi6tRDVah9R7SmwvSIk4svjrXvWm_Fx2MIXkvqGlaU8mPmtGuJrxTDKGyfDmsG7L24za-79MHsq22DDLA
+SENTRY_DSN=http://3cecddadd0b8439b964459c805671ae6@localhost:4000/1
+NEXT_PUBLIC_SENTRY_DSN=http://37273d0d8e3749548f012abd5daf7eb8@localhost:4000/2
+# API & Authentication
+API_BASE_URL=http://127.0.0.1:8000/api/v1
+AUTH_SECRET=ac7uc0598805655a2b015a789ba889e0
+AUTH_URL=http://127.0.0.1:3000/api/auth
+NEXT_PUBLIC_BASE_URL=http://127.0.0.1:3000
+NEXTAUTH_SECRET=ac7uc0598805655a2b015a789ba889e0
+NEXTAUTH_URL=http://127.0.0.1:3000
+NEXT_PUBLIC_WS_URL=ws://127.0.0.1:8000
+NODE_ENV=development
+
+# MinIO Variables (More Secure)
+MINIO_USE_HTTPS=False
+MINIO_ROOT_USER=admin
+MINIO_ENDPOINT="http://localhost:9000"
+MINIO_ROOT_PASSWORD=@Nisa@@252
+MINIO_ACCESS_KEY=UeP9zXv2K7jLqMcB
+MINIO_SECRET_KEY=W@T3xLhV7P!2y9fP
+
+
+# RabbitMQ
+RABBITMQ_DEFAULT_USER=admin
+RABBITMQ_DEFAULT_PASS=@Nisa@@252
+
+# Map
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoibWhiYWFuZG8iLCJhIjoiY21iNHd6dmhkMjA2eTJtcjB2b3J0aDI0YiJ9.fqX00mCRf1s88C9QkP2Fxg
+
+
+# eamils 
+user=hoyhub
+smtp_user=AKIAXEXQHOWNUWFUAMHF
+smtp_password = BCw58jnsdxKyWJRL+Bl9N2giHZdTle0A8Tpi4wDuTdfA
+
+SENDGRID_API_KEY=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
+
+
+
+CLIENT_ID=7w162rk1kXjfujtbLxNu81NmCYm3bpjeaUfGyYJx
+CLIENT_SECRET=7XyfGUb3esu5wLdTVEW9K2mw6ZonXP7TSpFNpo24fUXTawtN6hyf5uA4PcdGGoIPlSa3B4AyE5E00nRzkechvCCjolwf0RH4C4iQY65qsO6oTrFsZUhyfsmVPzZ3hJww
+MERCHANT_CODE=48241
+BUSINESS_NUMBER=756756
+CALLBACK_URL=https://7ef9023a8e88.ngrok-free.app/api/v1/paymentcallback/
+CALLBACK_URL_FOR_PAYOUTS=https://7ef9023a8e88.ngrok-free.app/api/v1/payoutcallback/
+CALLBACK_URL_FOR_EXPENSEPAY=https://7ef9023a8e88.ngrok-free.app/api/v1/expensecallback/
+CALLBACK_URL_FOR_CREDIT=https://7ef9023a8e88.ngrok-free.app/api/v1/credit-note-callback/
+CALLBACK_URL_FOR_PAYBILL=https://7ef9023a8e88.ngrok-free.app/api/v1/paybillCallback/

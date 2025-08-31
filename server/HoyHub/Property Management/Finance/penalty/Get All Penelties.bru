@@ -1,0 +1,16 @@
+meta {
+  name: Get All Penelties
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base}}penalties/stats/?date_from=2025-06-01&date_to=2025-07-15
+  body: none
+  auth: inherit
+}
+
+params:query {
+  date_from: 2025-06-01
+  date_to: 2025-07-15
+}

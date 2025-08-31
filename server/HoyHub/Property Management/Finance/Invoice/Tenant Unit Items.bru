@@ -1,0 +1,16 @@
+meta {
+  name: Tenant Unit Items
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base}}finance/invoices/tenant-unit-items?tenant_id=793093cf-1a8a-4f5f-9651-8b453b1e2114&with_items=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  tenant_id: 793093cf-1a8a-4f5f-9651-8b453b1e2114
+  with_items: true
+}

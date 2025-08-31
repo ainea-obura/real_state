@@ -1,0 +1,16 @@
+meta {
+  name: Unpaid Invoices
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base}}finance/payments/unpaid-invoices?user_id=4a1b7f68-1e92-4bfc-a9a9-672b2f1ea90d&recipient_type=tenant
+  body: none
+  auth: inherit
+}
+
+params:query {
+  user_id: 4a1b7f68-1e92-4bfc-a9a9-672b2f1ea90d
+  recipient_type: tenant
+}

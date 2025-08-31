@@ -1,0 +1,30 @@
+# Django server folder
+server/
+scripts/
+*.sql
+*.dump
+mc
+dump.rdb
+
+# Python files
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.venv/
+venv/
+pdm.lock
+pyproject.toml
+manage.py
+
+# Documentation and configs
+README.md
+*.md
+Dockerfile*
+docker-compose.yml
+
+# Logs and temp files
+*.log
+logs/
+temp/
+.cursor/

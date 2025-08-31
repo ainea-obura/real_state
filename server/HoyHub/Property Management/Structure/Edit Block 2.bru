@@ -1,0 +1,17 @@
+meta {
+  name: Edit Block
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{base}}projects/{{project}}/structure/blocks/29765c50-ed35-45fe-a9f0-2bec11a4bbbc/edit
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Block B"
+  }
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Search Recipient
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base}}finance/invoices/search?type=tenant&q=khada
+  body: none
+  auth: inherit
+}
+
+params:query {
+  type: tenant
+  q: khada
+}

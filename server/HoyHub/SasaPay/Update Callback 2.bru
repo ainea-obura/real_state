@@ -1,0 +1,32 @@
+meta {
+  name: Update Callback
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://hoyhub.net/api/v1/instant-payment-notification/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "MerchantCode": "48241",
+    "BusinessShortCode": "600980",
+    "InvoiceNumber": "INV-278-RID-6754",
+    "PaymentMethod": "SasaPay",
+    "TransID": "CDVISAIHD",
+    "ThirdPartyTransID": "7***2",
+    "FullName": "Mansuur Abdullahi",
+    "FirstName": "John",
+    "MiddleName": "kym",
+    "LastName": "Doe",
+    "TransactionType": "C2B",
+    "MSISDN": "2547*****5",
+    "OrgAccountBalance": "10.00",
+    "TransAmount": "10.00",
+    "TransTime": "20240703062353",
+    "BillRefNumber": "12345"
+  }
+}

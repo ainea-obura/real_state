@@ -1,0 +1,191 @@
+# ========================
+# Global Git Ignore Rules
+# ========================
+
+# Ignore all Django migration files
+/server/**/migrations/
+!server/**/migrations/__init__.py
+
+
+### General ###
+*.log
+*.pot
+*.pyc
+*.pyo
+*.mo
+*.pem
+__pycache__/
+local_settings.py
+
+# ========================
+# server (Django) Ignore Rules
+# ========================
+
+# Database files
+server/db.sqlite3
+server/db.sqlite3-journal
+
+# Media files
+server/media/
+
+# Python bytecode and build artifacts
+server/*.py[cod]
+server/*$py.class
+server/*.so
+server/.Python
+server/build/
+server/develop-eggs/
+server/dist/
+server/downloads/
+server/eggs/
+server/.eggs/
+server/lib/
+server/lib64/
+server/parts/
+server/sdist/
+server/var/
+server/wheels/
+server/share/python-wheels/
+server/*.egg-info/
+server/.installed.cfg
+server/*.egg
+server/MANIFEST
+server/staticfiles
+
+# Virtual environments
+server/.env
+server/.venv
+server/env/
+server/venv/
+server/ENV/
+server/env.bak/
+server/venv.bak/
+
+# Testing and coverage
+server/htmlcov/
+server/.tox/
+server/.nox/
+server/.coverage
+server/.coverage.*
+server/.cache
+server/nosetests.xml
+server/coverage.xml
+server/*.cover
+server/*.py,cover
+server/.hypothesis/
+server/.pytest_cache/
+server/cover/
+server/static
+
+server/.pdm-python
+
+# IDE and editor files
+server/.ropeproject
+server/.mypy_cache/
+server/.dmypy.json
+server/dmypy.json
+server/.pyre/
+server/.pytype/
+server/cython_debug/
+server/.spyderproject
+server/.spyproject
+
+# Other Django-specific files
+server/celerybeat-schedule
+server/celerybeat.pid
+server/instance/
+server/.webassets-cache
+server/.scrapy
+server/docs/_build/
+server/.pybuilder/
+server/target/
+
+# ========================
+# Frontend (Next.js) Ignore Rules
+# ========================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+*.env
+
+# Build outputs
+.next/
+out/
+build/
+
+# Testing and coverage
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+# .env*.local
+.env.production
+
+# Vercel deployment
+.vercel
+
+server/celerybeat-schedule-shm
+server/celerybeat-schedule-wal
+server/celerybeat-schedule
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# ========================
+# Operating System Files
+# ========================
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+*.icloud
+
+### Linux ###
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+### Windows ###
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# ========================
+# End of .gitignore
+# ========================
+node_modules

@@ -1,0 +1,17 @@
+meta {
+  name: Get All Companies
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base}}companies/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "country_id":"422e03d5-2763-4020-8db3-88832d218916"
+  }
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Update
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base}}projects/tenants/verify/919ffeeb-2f75-4f61-a5ac-5fbbd6dd8adc/update
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  tenant_id: {{tenant_id}}
+  id_number: PA-00
+  ~document_image: @file(/Users/mruus/Downloads/WhatsApp Image 2025-06-08 at 20.09.17.jpeg)
+}

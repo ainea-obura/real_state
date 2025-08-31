@@ -1,0 +1,18 @@
+meta {
+  name: Delete
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base}}positions/65a8191d-5815-4b5a-aac1-10595058d5b0/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Accountant",
+    "description": "Accou. Manager"
+  }
+}

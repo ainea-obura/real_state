@@ -1,0 +1,20 @@
+meta {
+  name: Update
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{base}}finance/currency/d858683b-0b37-40a8-85db-352cef670516/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "code": "POK",
+    "decimal_places": 2,
+    "name": "POK",
+    "symbol": "POK"
+  }
+}

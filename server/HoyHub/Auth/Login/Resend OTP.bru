@@ -1,0 +1,16 @@
+meta {
+  name: Resend OTP
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base}}auth/resend-otp/
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  email: ka@hoyhub.com
+  otp_type: verify_otp
+}

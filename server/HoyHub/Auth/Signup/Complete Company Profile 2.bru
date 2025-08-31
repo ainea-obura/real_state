@@ -1,0 +1,21 @@
+meta {
+  name: Complete Company Profile
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base}}auth/complete-company-profile
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  email: mansuurtech101@gmail.com
+  name: Hoy Company
+  phone: 614851444
+  county: 56bc2cf3-8233-464d-b1d1-fb2aa1cc16fc
+  postal_code: AD-09093
+  logo: @file(/home/mruus/Downloads/images.jpeg)
+  address: Laamiga
+}

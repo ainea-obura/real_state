@@ -1,0 +1,61 @@
+# Django server directory
+server/
+
+# Python virtual environment
+server/.venv/
+
+# Python cache files
+server/__pycache__/
+server/**/__pycache__/
+server/**/*.pyc
+server/**/*.pyo
+
+# Django database files
+server/*.sqlite3
+server/db.sqlite3
+
+# Celery files
+server/celerybeat-schedule*
+server/celerybeat-schedule-wal
+server/celerybeat-schedule-shm
+
+# Python package manager files
+server/pdm.lock
+server/.pdm-python
+
+# Django migrations (if not needed in frontend build)
+server/**/migrations/
+
+# Development files
+server/.gitignore
+server/manage.py
+
+# Mobile app directory (if not needed for web build)
+mobile/
+
+# Documentation files
+*.md
+!README.md
+
+# Database dumps
+*.sql
+dump.rdb
+
+# Docker files (if not needed for frontend)
+docker-compose.yml
+
+# Temporary files
+temp.sql
+.DS_Store
+
+# IDE files
+.cursor/
+.vscode/
+
+# Log files
+*.log
+
+# Environment files (should be set in Amplify console)
+.env
+.env.local
+.env.production 

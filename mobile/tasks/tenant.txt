@@ -1,0 +1,40 @@
+- the tenant can register his accounts, look the profile in the tenant frontend features/clients/tabs/tenantAccounts.tsx, that way is what i want, but this is mobile, design can be different, but the flow should be the same.
+
+- tenant can update his information, look at the profile of the tenant in the frontend, and understand how the app should work. what he can update is first_name, last_name, email, phone (with country code selection as we did in the frontend), and gender.
+
+- user can change his password, look how we did in features/settings/tabs/change-password.tsx, and understand how the app should work.
+
+- user can see his properties that is he is leaves in, look at the profile of the tenant in the frontend, and understand how the app should work.
+
+- last is the list of all of his invoices, making payments, and see the status of the invoices. plus the list of all of his payments, and see the status of the payments.
+
+
+
+that is what i want for the tenant, 
+
+
+notifications should be there (without conencted to backend just coming soon)
+
+
+i wanmt the design to folloow my frontend and to be easy with no more clicking
+
+
+
+but let me tell you how many tabs in the bottom navigation bar.
+
+properties (the list of the properties that the tenant is leaves in)
+finance (the list of the invoices and payments and where he can make payments)
+Profile
+  - registeringn his accounts
+  - updating his information
+  - changing his password
+  - logout
+
+
+
+
+
+
+
+
+that is what i want for the tenant,

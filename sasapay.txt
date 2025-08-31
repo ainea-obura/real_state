@@ -1,0 +1,21 @@
+docs: docs.sasapay.app
+
+
+Collection: C2B
+Payout: B2C
+
+Unique Refrence
+Notification Response Unique
+
+Order Number : Initiating Number
+
+
+Tenant has to see the PM's name:
+------
+
+0: sasapay (number must be generated in sasapay)
+
+AfricaIsTalking : OTP
+
+
+0: success

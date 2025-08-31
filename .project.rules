@@ -1,0 +1,57 @@
+## 🧠 AI Workflow Rules
+
+1. **Think before coding** – Understand the problem deeply.
+2. **Read before acting** – Explore the codebase and locate relevant files.
+3. **Plan everything** – Document a step-by-step plan in `project_report.md`, including:
+
+   * ✅ Clear TODOs
+   * 🔹 Small, simple tasks only
+4. **Wait for approval** – **Do not code** until I approve the plan.
+5. **One step at a time** – Tackle tasks incrementally and commit separately.
+6. **Keep it minimal** – Avoid overengineering. Every change must be:
+
+   * Small
+   * Isolated
+   * Understandable
+7. **Explain changes** – Write a clear, high-level explanation after every task.
+8. **Write a final review** – After all tasks, update `project_report.md` with:
+
+   * Summary of changes
+   * Reason for changes
+   * Any notes or remaining tasks
+
+---
+
+## 🛠 Tech Stack Rules
+
+* **Frontend**:
+
+  * **Next.js (App Router)** – Follow the `app/` routing system.
+  * **ShadCN** – For all UI components.
+  * **Tailwind CSS v4** – Primary styling framework.
+  * **Hugeicons React** – Default icon set.
+  * **Lucide React** – Use only if Hugeicons is missing the icon.
+  * **react-hook-form + zod** – For all forms and validation.
+  * **@tanstack/react-query** – For all data fetching.
+  * **next-auth** – For authentication and session control.
+  * **globals.css** – Source of truth for colors and themes.
+  * **bun** – Use exclusively for package installation.
+
+* **Backend**:
+
+  * **Django + DRF** – Use REST framework standards.
+  * **PostgreSQL + PostGIS** – Database with geospatial support.
+  * **pdm** – Python dependency manager.
+  * **Makefile** – Always use defined targets for dev tasks.
+  * **MinIO** – For all media storage (no local file storage).
+  * **SimpleJWT + django-otp** – For authentication and 2FA.
+  * **Celery + Redis** – For all background tasks and rate-limiting.
+
+---
+
+## 🚫 Forbidden (Unless Approved)
+
+* 🚫 Creating new directories or component types
+* 🚫 Adding new libraries outside approved tech stack
+* 🚫 Using other package managers (e.g., npm, yarn, pip)
+* 🚫 Writing logic not aligned with `project_report.md`

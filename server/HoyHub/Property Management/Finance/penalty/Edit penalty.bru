@@ -1,0 +1,23 @@
+meta {
+  name: Edit penalty
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base}}penalties/3daddeea-cb27-4939-b33d-f02fbaef1fc8/update/
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+  
+        "penalty_type": "late_payment",
+        "amount": 1200,
+  
+        "due_date": "2025-07-10",
+        "notes": "Hello mansuur notes",
+        "tenant_notes": "Hello hoyhub notes"
+    }
+}

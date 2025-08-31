@@ -1,0 +1,28 @@
+meta {
+  name: create
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base}}projects/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "node_name": "Downtown Tower",
+    "city": "302bb0d5-c532-445e-9fb1-adab47420ae0",
+    "area": "Central Business District",
+    "project_code": "006",
+    "address": "123 Main St, Downtown",
+  //   "start_date": "2024-07-01",
+  //   "end_date": "2025-12-31",
+    "status": "ongoing",
+    "description": "A new high-rise commercial project in the city center.",
+    "project_type": "commercial",
+    "lat": 55.2708,
+    "long": 25.2048
+  }
+}

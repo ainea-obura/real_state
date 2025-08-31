@@ -1,0 +1,272 @@
+meta {
+  name: Create Invoice
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base}}finance/invoices/create-invoice
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "recipients": [
+      {
+        "id": "4a1b7f68-1e92-4bfc-a9a9-672b2f1ea90d",
+        "type": "tenant",
+        "name": "Mansuur Abdullahi",
+        "units": [
+          {
+            "unitId": "50a133c8-52ce-431e-897a-a5cc6f5f501e",
+            "unitName": "A0101",
+            "items": [
+              {
+                "description": "Rent for July 2025",
+                "node_name": "A0101",
+                "type": "Rent",
+                "quantity": 1,
+                "rate": null,
+                "amount": 2000,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "serviceId": null,
+                "unitId": "50a133c8-52ce-431e-897a-a5cc6f5f501e"
+              },
+              {
+                "description": "Electricity",
+                "node_name": "A0101",
+                "type": "Variable",
+                "quantity": 1,
+                "rate": null,
+                "amount": 0,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": true,
+                "serviceId": "bb0342a6-e461-4ea2-8ae5-018d782378c6",
+                "unitId": "50a133c8-52ce-431e-897a-a5cc6f5f501e"
+              },
+              {
+                "description": "Water",
+                "node_name": "A0101",
+                "type": "Variable",
+                "quantity": 1,
+                "rate": null,
+                "amount": 0,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": true,
+                "serviceId": "ee7e2356-8ad6-46f5-9f5f-fc10990c18e8",
+                "unitId": "50a133c8-52ce-431e-897a-a5cc6f5f501e"
+              },
+              {
+                "description": "Internet",
+                "node_name": "A0101",
+                "type": "Fixed",
+                "quantity": 1,
+                "rate": null,
+                "amount": 300,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": false,
+                "serviceId": "0c67edde-84cb-4c71-a004-f4038215d82e",
+                "unitId": "50a133c8-52ce-431e-897a-a5cc6f5f501e"
+              }
+            ]
+          },
+          {
+            "unitId": "9624b77b-5cca-4d47-8900-ebd9ae902b76",
+            "unitName": "A0102",
+            "items": [
+              {
+                "description": "Rent for July 2025",
+                "node_name": "A0102",
+                "type": "Rent",
+                "quantity": 1,
+                "rate": null,
+                "amount": 1500,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "serviceId": null,
+                "unitId": "9624b77b-5cca-4d47-8900-ebd9ae902b76"
+              },
+              {
+                "description": "Electricity",
+                "node_name": "A0102",
+                "type": "Variable",
+                "quantity": 1,
+                "rate": null,
+                "amount": 0,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": true,
+                "serviceId": "21b880e0-f3fe-411b-b7d1-53da78cd0da1",
+                "unitId": "9624b77b-5cca-4d47-8900-ebd9ae902b76"
+              },
+              {
+                "description": "Water",
+                "node_name": "A0102",
+                "type": "Variable",
+                "quantity": 1,
+                "rate": null,
+                "amount": 0,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": true,
+                "serviceId": "6ec3aee9-9924-44de-b0ce-d5196cea3e9f",
+                "unitId": "9624b77b-5cca-4d47-8900-ebd9ae902b76"
+              },
+              {
+                "description": "Internet",
+                "node_name": "A0102",
+                "type": "Fixed",
+                "quantity": 1,
+                "rate": null,
+                "amount": 300,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": false,
+                "serviceId": "184e0dcd-5b9f-4bea-9535-fca9d49f7463",
+                "unitId": "9624b77b-5cca-4d47-8900-ebd9ae902b76"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "4439ab99-80d7-45e4-93fb-fc7e77f5eade",
+        "type": "tenant",
+        "name": "Mohamud Ali",
+        "units": [
+          {
+            "unitId": "fefc304a-18d2-4e4d-a696-58b01cbb72e6",
+            "unitName": "A0103",
+            "items": [
+              {
+                "description": "Rent for July 2025",
+                "node_name": "A0103",
+                "type": "Rent",
+                "quantity": 1,
+                "rate": null,
+                "amount": 800,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "serviceId": null,
+                "unitId": "fefc304a-18d2-4e4d-a696-58b01cbb72e6"
+              },
+              {
+                "description": "Electricity",
+                "node_name": "A0103",
+                "type": "Variable",
+                "quantity": 1,
+                "rate": null,
+                "amount": 0,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": true,
+                "serviceId": "5c9c6cd4-029f-47ae-a07b-a69611fbe9b9",
+                "unitId": "fefc304a-18d2-4e4d-a696-58b01cbb72e6"
+              },
+              {
+                "description": "Water",
+                "node_name": "A0103",
+                "type": "Variable",
+                "quantity": 1,
+                "rate": null,
+                "amount": 0,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": true,
+                "serviceId": "8d510dcb-7353-4ea4-96e8-fddd46c1c281",
+                "unitId": "fefc304a-18d2-4e4d-a696-58b01cbb72e6"
+              },
+              {
+                "description": "Internet",
+                "node_name": "A0103",
+                "type": "Fixed",
+                "quantity": 1,
+                "rate": null,
+                "amount": 300,
+                "percentage_rate": null,
+                "currency": {
+                  "id": "9db05cb6-8fcc-4ade-9a00-301762eb0614",
+                  "code": "USD",
+                  "name": "United States dollar",
+                  "symbol": "USD"
+                },
+                "inputRequired": false,
+                "serviceId": "c76bc99f-76ce-4fd3-b9a6-97f7667bfb4a",
+                "unitId": "fefc304a-18d2-4e4d-a696-58b01cbb72e6"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "dueDate": "2025-07-16",
+    "issueDate": "2025-07-11",
+    "notes": "",
+    "isRecurring": false,
+    "recurringFrequency": "monthly",
+    "recurringEndDate": "",
+    "taxPercentage": 8,
+    "discountPercentage": 0,
+    "status": "final"
+  }
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Sasapy Test
+  type: http
+  seq: 5
+}
+
+post {
+  url: https://sandbox.sasapay.app/api/v2/waas/business-onboarding/kyc/
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: lIYhOcjlGsAV6xZj4QVdiTbdHPF5GC
+}
+
+body:multipart-form {
+  merchantCode: 48241
+  requestId: 10c27b06-0e3d-46a3-b9d7-adac284ecb22
+  businessKraPin: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  businessRegistrationCertificate: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  boardResolution: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  cr12Document: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  proofOfAddressDocument: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  proofOfBankDocument: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  directorsKyc[0][directorIdCardBack]: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  directorsKyc[0][directorKraPin]: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  directorsKyc[0][directorIdCardFront]: @file(/Users/mhbaando/Downloads/WhatsApp Image 2025-08-11 at 23.40.10.jpeg)
+  directorsKyc[0][directorKraPinNumber]: A007774P
+}
+
+settings {
+  encodeUrl: true
+}

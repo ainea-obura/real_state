@@ -1,0 +1,767 @@
+/**
+ * HoyHub Documentation - Stunning, Responsive Design
+ * Properly integrated with Docusaurus layout system
+ */
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* CSS Variables - Clean Black & White Design */
+:root {
+  /* Primary brand color */
+  --ifm-color-primary: hsl(238.73 83.53% 66.67%);
+  --ifm-color-primary-dark: hsl(238.73 83.53% 58%);
+  --ifm-color-primary-darker: hsl(238.73 83.53% 52%);
+  --ifm-color-primary-darkest: hsl(238.73 83.53% 45%);
+  --ifm-color-primary-light: hsl(238.73 83.53% 75%);
+  --ifm-color-primary-lighter: hsl(238.73 83.53% 80%);
+  --ifm-color-primary-lightest: hsl(238.73 83.53% 85%);
+  
+  /* Neutral colors - only whites and grays */
+  --ifm-color-secondary: #6b7280;
+  --ifm-color-secondary-dark: #4b5563;
+  --ifm-color-secondary-darker: #374151;
+  --ifm-color-secondary-darkest: #1f2937;
+  --ifm-color-secondary-light: #9ca3af;
+  --ifm-color-secondary-lighter: #d1d5db;
+  --ifm-color-secondary-lightest: #f3f4f6;
+  
+  /* Semantic colors - using grays only */
+  --ifm-color-success: #6b7280;
+  --ifm-color-info: #6b7280;
+  --ifm-color-warning: #6b7280;
+  --ifm-color-danger: #6b7280;
+  
+  /* Background and text colors */
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-color-emphasis-0: #ffffff;
+  --ifm-color-emphasis-50: #fafafa;
+  --ifm-color-emphasis-100: #f5f5f5;
+  --ifm-color-emphasis-200: #e5e5e5;
+  --ifm-color-emphasis-300: #d4d4d4;
+  --ifm-color-emphasis-400: #a3a3a3;
+  --ifm-color-emphasis-500: #737373;
+  --ifm-color-emphasis-600: #525252;
+  --ifm-color-emphasis-700: #404040;
+  --ifm-color-emphasis-800: #262626;
+  --ifm-color-emphasis-900: #000000;
+  
+  /* Typography */
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+  --ifm-heading-font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.7;
+  
+  /* Spacing and borders */
+  --ifm-border-radius: 0.75rem;
+  --ifm-border-width: 1px;
+  
+  /* Shadows */
+  --ifm-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --ifm-shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ifm-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Transitions */
+  --ifm-transition-fast: 200ms;
+  --ifm-transition-slow: 400ms;
+}
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--ifm-font-family-base);
+  background-color: var(--ifm-background-color);
+  color: #000000;
+  line-height: var(--ifm-line-height-base);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography - Black text on white background */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ifm-heading-font-family);
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  color: #000000;
+  letter-spacing: -0.025em;
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 2rem;
+  color: #000000;
+}
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-top: 3.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--ifm-color-emphasis-200);
+  color: #000000;
+}
+
+h3 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-top: 3rem;
+  margin-bottom: 1.25rem;
+  color: #000000;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: #000000;
+}
+
+/* Main layout - Work with Docusaurus grid system */
+.main-wrapper {
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+/* Sidebar styling - Integrate with Docusaurus */
+.theme-doc-sidebar-container {
+  background-color: #ffffff;
+  border-right: 1px solid var(--ifm-color-emphasis-200);
+  box-shadow: var(--ifm-shadow);
+}
+
+/* Sidebar brand/header */
+.theme-doc-sidebar-container::before {
+  content: 'HoyHub';
+  display: block;
+  font-family: var(--ifm-heading-font-family);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ifm-color-primary);
+  padding: 2rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  background-color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Sidebar menu */
+.menu {
+  padding: 1rem 0;
+}
+
+.menu__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu__list-item {
+  margin: 0;
+}
+
+.menu__link {
+  color: #000000;
+  font-weight: 500;
+  border-radius: var(--ifm-border-radius);
+  margin: 0.25rem 1rem;
+  padding: 0.75rem 1rem;
+  transition: all var(--ifm-transition-fast);
+  display: block;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.menu__link:hover {
+  background-color: var(--ifm-color-emphasis-50);
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  border-color: var(--ifm-color-emphasis-200);
+  transform: translateX(4px);
+}
+
+.menu__link--active {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+  border-color: var(--ifm-color-primary);
+  box-shadow: var(--ifm-shadow);
+}
+
+.menu__link--active:hover {
+  background-color: var(--ifm-color-primary-dark);
+  color: #ffffff;
+}
+
+/* Category labels */
+.menu__list-item--category {
+  margin-top: 1.5rem;
+}
+
+.menu__list-item--category .menu__link {
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+  background-color: var(--ifm-color-emphasis-50);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  margin: 0 1rem 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.menu__list-item--category .menu__link:hover {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+  transform: none;
+}
+
+/* Main content area - Use Docusaurus grid */
+.main {
+  background-color: #ffffff;
+  padding: 3rem 2rem;
+  min-height: 100vh;
+}
+
+/* Content styling */
+.theme-doc-markdown {
+  background-color: #ffffff;
+  border-radius: var(--ifm-border-radius);
+  padding: 0;
+  box-shadow: none;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Cards and content boxes */
+.card {
+  background-color: #ffffff;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-border-radius);
+  box-shadow: var(--ifm-shadow);
+  padding: 2.5rem;
+  margin: 2.5rem 0;
+  transition: all var(--ifm-transition-fast);
+}
+
+.card:hover {
+  box-shadow: var(--ifm-shadow-lg);
+  transform: translateY(-2px);
+  border-color: var(--ifm-color-primary);
+}
+
+.card h4 {
+  color: var(--ifm-color-primary);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.card p {
+  margin-bottom: 1.5rem;
+  color: #000000;
+  line-height: 1.7;
+}
+
+/* Buttons */
+.button {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+  border: 2px solid var(--ifm-color-primary);
+  border-radius: var(--ifm-border-radius);
+  padding: 1rem 2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ifm-transition-fast);
+  text-decoration: none;
+  display: inline-block;
+  margin: 0.75rem;
+  font-size: 1rem;
+  box-shadow: var(--ifm-shadow);
+}
+
+.button:hover {
+  background-color: #ffffff;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: var(--ifm-shadow-lg);
+}
+
+.button--secondary {
+  background-color: #ffffff;
+  color: var(--ifm-color-primary);
+  border: 2px solid var(--ifm-color-primary);
+}
+
+.button--secondary:hover {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+}
+
+/* Hero section */
+.hero {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%);
+  color: #ffffff;
+  padding: 5rem 3rem;
+  text-align: center;
+  border-radius: var(--ifm-border-radius);
+  margin-bottom: 3rem;
+  box-shadow: var(--ifm-shadow-lg);
+}
+
+.hero__title {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+.hero__subtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+  opacity: 0.9;
+  margin-bottom: 3rem;
+  color: #ffffff;
+}
+
+.hero__buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Feature cards */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 3rem;
+  margin: 3rem 0;
+}
+
+.feature {
+  background-color: #ffffff;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-border-radius);
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: var(--ifm-shadow);
+  transition: all var(--ifm-transition-fast);
+}
+
+.feature:hover {
+  box-shadow: var(--ifm-shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--ifm-color-primary);
+}
+
+.feature__title {
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.feature p {
+  color: #000000;
+  line-height: 1.7;
+}
+
+/* Code blocks */
+.prism-code {
+  background-color: #f8f9fa;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-border-radius);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}
+
+/* Inline code */
+code {
+  background-color: #f8f9fa;
+  color: var(--ifm-color-primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: var(--ifm-font-family-monospace);
+  border: 1px solid #e5e5e5;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 2.5rem 0;
+  background-color: #ffffff;
+  border-radius: var(--ifm-border-radius);
+  overflow: hidden;
+  box-shadow: var(--ifm-shadow);
+}
+
+th, td {
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+th {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+tr:hover {
+  background-color: var(--ifm-color-emphasis-50);
+}
+
+/* Links */
+a {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  transition: color var(--ifm-transition-fast);
+  border-bottom: 1px solid transparent;
+}
+
+a:hover {
+  color: var(--ifm-color-primary-dark);
+  border-bottom-color: var(--ifm-color-primary);
+}
+
+/* Footer */
+.footer {
+  background-color: var(--ifm-color-emphasis-50);
+  color: #000000;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+  padding: 3rem 0;
+  margin-top: 5rem;
+}
+
+.footer a {
+  color: var(--ifm-color-primary);
+}
+
+.footer a:hover {
+  color: var(--ifm-color-primary-dark);
+}
+
+/* Responsive design - Work with Docusaurus breakpoints */
+@media (max-width: 996px) {
+  /* Tablet and smaller */
+  .main {
+    padding: 2rem 1.5rem;
+  }
+  
+  .hero {
+    padding: 3rem 2rem;
+  }
+  
+  .hero__title {
+    font-size: 3rem;
+  }
+  
+  .features {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .card {
+    padding: 2rem;
+  }
+  
+  h1 {
+    font-size: 3rem;
+  }
+  
+  h2 {
+    font-size: 2.25rem;
+  }
+  
+  h3 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile */
+  .main {
+    padding: 1.5rem 1rem;
+  }
+  
+  .hero {
+    padding: 2rem 1rem;
+  }
+  
+  .hero__title {
+    font-size: 2.5rem;
+  }
+  
+  .hero__subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .hero__buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 2rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+  }
+  
+  h4 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ifm-color-emphasis-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-primary-dark);
+}
+
+/* Focus states for accessibility */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+a:focus {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+/* Content improvements */
+p {
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+  color: #000000;
+}
+
+ul, ol {
+  margin: 2rem 0;
+  padding-left: 2.5rem;
+}
+
+li {
+  margin: 1rem 0;
+  line-height: 1.7;
+  color: #000000;
+}
+
+/* Blockquote styling */
+blockquote {
+  border-left: 4px solid var(--ifm-color-primary);
+  margin: 2.5rem 0;
+  padding: 1.5rem 2rem;
+  background-color: var(--ifm-color-emphasis-50);
+  border-radius: 0 var(--ifm-border-radius) var(--ifm-border-radius) 0;
+}
+
+blockquote p {
+  margin: 0;
+  font-style: italic;
+  color: #000000;
+}
+
+/* Horizontal rule styling */
+hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ifm-color-primary), transparent);
+  margin: 3rem 0;
+}
+
+/* Image styling */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--ifm-border-radius);
+  box-shadow: var(--ifm-shadow);
+}
+
+/* Pre and code block improvements */
+pre {
+  background-color: #f8f9fa;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-border-radius);
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 2rem 0;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 0.9rem;
+}
+
+/* Badge styling */
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+  margin: 0 0.5rem;
+}
+
+.badge--secondary {
+  background-color: #6b7280;
+}
+
+.badge--success {
+  background-color: #6b7280;
+}
+
+.badge--warning {
+  background-color: #6b7280;
+}
+
+.badge--danger {
+  background-color: #6b7280;
+}
+
+/* Content section separators */
+.content-section {
+  margin: 4rem 0;
+  padding: 2rem 0;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.content-section:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+
+/* Code block improvements */
+.code-block {
+  background-color: #f8f9fa;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-border-radius);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  overflow-x: auto;
+}
+
+.code-block__header {
+  background-color: var(--ifm-color-emphasis-100);
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  border-radius: var(--ifm-border-radius) var(--ifm-border-radius) 0 0;
+  font-weight: 500;
+  color: #000000;
+}
+
+/* Table improvements */
+.table-container {
+  overflow-x: auto;
+  margin: 2rem 0;
+  border-radius: var(--ifm-border-radius);
+  box-shadow: var(--ifm-shadow);
+}
+
+/* List improvements */
+.feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--ifm-color-emphasis-100);
+  margin: 0;
+}
+
+.feature-list li:last-child {
+  border-bottom: none;
+}
+
+.feature-list li::before {
+  content: "•";
+  color: var(--ifm-color-primary);
+  font-weight: bold;
+  display: inline-block;
+  width: 1.5rem;
+  margin-left: -1.5rem;
+}
+
+/* Alert styling */
+.alert {
+  padding: 1.5rem;
+  border-radius: var(--ifm-border-radius);
+  margin: 2rem 0;
+  border-left: 4px solid;
+  background-color: var(--ifm-color-emphasis-50);
+}
+
+.alert--success {
+  border-color: var(--ifm-color-emphasis-400);
+  color: #000000;
+}
+
+.alert--warning {
+  border-color: var(--ifm-color-emphasis-500);
+  color: #000000;
+}
+
+.alert--error {
+  border-color: var(--ifm-color-emphasis-600);
+  color: #000000;
+}
+
+.alert--info {
+  border-color: var(--ifm-color-emphasis-300);
+  color: #000000;
+}

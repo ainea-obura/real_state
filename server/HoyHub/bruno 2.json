@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "HoyHub",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

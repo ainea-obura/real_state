@@ -1,0 +1,11 @@
+meta {
+  name: Get Service Detail
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base}}project-services/{{project_id}}/overview
+  body: none
+  auth: inherit
+}

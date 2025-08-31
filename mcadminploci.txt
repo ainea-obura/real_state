@@ -1,0 +1,70 @@
+# Check if MinIO is running locally
+lsof -i :9000
+
+# Or check with curl
+curl -I http://localhost:9000
+Step 2: Use admin credentials that work
+bash# You have admin credentials in your django-policy alias, let's use those
+mc alias set myminio http://localhost:9000 admin '@Nisa@@252'
+
+# Test admin access
+mc admin info myminio
+Step 3: Check what users exist on your local MinIO
+bash# List existing users
+mc admin user list myminio
+Step 4: Create django-user if it doesn't exist
+bash# Create django-user on your local MinIO
+mc admin user add myminio django-user '@Nisa@@252'
+
+# Verify user was created
+mc admin user list myminio
+Step 5: Apply the policy to django-user
+bash# Create the policy file
+cat > minio-django-policy.json << 'EOF'
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:ListBucket",
+          "s3:GetBucketLocation",
+          "s3:HeadObject"
+        ],
+        "Resource": [
+          "arn:aws:s3:::static",
+          "arn:aws:s3:::media"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ],
+        "Resource": [
+          "arn:aws:s3:::static/*",
+          "arn:aws:s3:::media/*"
+        ]
+      }
+    ]
+}
+EOF
+
+# Create the policy
+mc admin policy create myminio django-policy minio-django-policy.json
+
+# Attach policy to django-user
+mc admin policy attach myminio django-policy --user django-user
+Step 6: Create buckets if they don't exist locally
+bash# Check if buckets exist
+mc ls myminio
+
+# Create buckets if missing
+mc mb myminio/media
+mc mb myminio/static
+
+# Set bucket permissions
+mc anonymous set download myminio/media
+mc anonymous set public myminio/static

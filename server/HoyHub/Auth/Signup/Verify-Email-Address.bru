@@ -1,0 +1,16 @@
+meta {
+  name: Verify-Email-Address
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base}}auth/verify-email/
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  email: moh@hoyhub.com
+  otp_code: 107224
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Get All Cities
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base}}geo/cities?country_id=019abdcc-771f-48c3-b2fc-23489d1a4419
+  body: none
+  auth: inherit
+}
+
+params:query {
+  country_id: 019abdcc-771f-48c3-b2fc-23489d1a4419
+}
+
+body:json {
+  {
+    "country_id":"422e03d5-2763-4020-8db3-88832d218916"
+  }
+}

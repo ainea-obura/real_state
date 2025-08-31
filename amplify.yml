@@ -1,0 +1,23 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Installing dependencies..."
+        - npm install -g bun
+        - bun install
+    build:
+      commands:
+        - echo "Building the application..."
+        - bun run build
+        - echo "Build completed successfully"
+  artifacts:
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
+      - bun.lockb
+      - bun.lock

@@ -1,0 +1,62 @@
+First it is a single mobile app.
+
+Starts with a login screen or an authentication screen.
+
+User uses email and password to login that is been given to, so no signing up.
+
+The login will seemlessly be the same logic as our frontend, take a look and see how it works /app/(auth)
+
+FLow:
+
+1. User opens the app
+2. User is redirected to the login screen
+3. User enters email and password
+4. User is sent to verify otp screen
+5. User enters otp
+6. User is logged in
+
+
+Then here the user will be classififed, we sent a type that exists in users model in server/accounts/models.py.
+
+
+in the app we only accept the following types:
+
+"owner"
+"tenant"
+
+
+others show a screen that says "You are not authorized to use this app"
+
+
+Then here will be redirected to the features for each the tenant or owner.
+
+
+Remember this, the design should be not too advanced and not complicated and not to inlcude multiple clicks to go to multi places, should be simple and easy to use.
+
+
+UPDATED:
+
+1. no permissions, the app is all open
+2. when the user is logged in, gets access token, and refresh token
+3. the access token is used to access the api
+4. the refresh token is used to refresh the access token
+5. the access token has a valid time
+6. if expires use the refresh token to get a new access token
+7. if refresh token expires, the user is logged out
+
+you have to understand the flow of the app, and how the user is logged in and how the access token is used to access the api.
+
+we access the api with valid token, like we do in the frontend, so you have to understand the flow of the app, and how the user is logged in and how the access token is used to access the api.
+
+
+the language we are using is:
+
+- flutetr
+- dart
+
+Also one recommendatino i want to add is to use GetX for the state management, and for the navigation.
+
+
+
+
+Also what the share is the bottom navigation bar, the content can be different, but the design should be the same.

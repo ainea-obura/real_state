@@ -1,0 +1,15 @@
+meta {
+  name: Search
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base}}projects/tenants/search?q=juwerio
+  body: none
+  auth: inherit
+}
+
+params:query {
+  q: juwerio
+}

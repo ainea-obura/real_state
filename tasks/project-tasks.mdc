@@ -1,0 +1,111 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Management 
+
+## Pending Tasks
+### Frontend
+- [x] **FE-001:** Update company creation form validation  
+  - Update Zod schema to match backend requirements
+  - Add proper file validation for logo upload
+  - Add loading states for form submission
+  ✓ Updated schema to match backend fields
+  ✓ Added proper file validation with size and type checks
+  ✓ Added toast notifications for validation errors
+  ✓ Separated UI fields (countryId) from submission data
+  ✓ Added proper TypeScript types
+  ✓ Made logo required with clear validation
+  ✓ Added automatic https:// prefix for website URLs
+
+- [x] **FE-002:** Create company creation server action  
+  - Create new server action in actions/company
+  - Add proper error handling and types
+  - Handle file upload for company logo
+  - Add loading states and error feedback
+  ✓ Created protected server action with authentication
+  ✓ Added proper TypeScript interfaces for API responses
+  ✓ Implemented multipart/form-data for logo upload
+  ✓ Added path revalidation after creation
+  ✓ Added comprehensive error handling
+
+- [x] **FE-003:** Handle company creation flow  
+  - Add proper error handling for session update
+  - Handle redirect after successful creation
+  - Add user feedback for session state
+  ✓ Added success message with clear instructions
+  ✓ Implemented sign out after company creation
+  ✓ Added redirect to sign-in for fresh session
+  ✓ Improved error handling and user feedback
+
+- [ ] **FE-004:** Implement session update mechanism
+  - Research and implement proper session update
+  - Handle token refresh with company data
+  - Add proper error handling
+  - Test session persistence
+
+### Backend
+- [x] **BE-001:** Update CompanySerializer for creation  
+  - Add validation for required fields
+  - Add proper file handling for logo
+  - Add custom create method to handle owner creation
+  ✓ Added CreateCompanySerializer with proper validation
+  ✓ Added file handling for logo with size and format validation
+  ✓ Added unique constraints for email
+  ✓ Added clear error messages for all fields
+  ✓ Fixed existing serializers to use City instead of Region
+  ✓ Updated field names to match frontend (postalCode)
+
+- [x] **BE-002:** Create Branch creation endpoint  
+  - Add BranchSerializer for main branch
+  - Add validation for branch fields
+  - Add endpoint to create branch
+  ✓ Created BranchCreateSerializer with validation
+  ✓ Added company context validation
+  ✓ Created CreateBranchView with proper error handling
+  ✓ Added rate limiting and authentication
+  ✓ Added standard RESTful routes
+
+- [x] **BE-003:** Update Company creation view  
+  - Add transaction handling for company and branch creation
+  - Add proper error handling
+  - Add validation for unique fields
+  - Add owner creation logic
+  ✓ Created CreateCompanyView with transaction handling
+  ✓ Implemented automatic main branch creation
+  ✓ Added proper error responses
+  ✓ Added rate limiting and authentication
+  ✓ Created standard RESTful routes
+
+- [x] **BE-004:** Implement Company Owner Creation  
+  - Update CompanyCreateSerializer to handle user_email
+  - Create Owner record in transaction with Company
+  - Add validation for user existence
+  - Add error handling for owner creation
+  - Update response to include owner information
+  - Add tests for owner creation flow
+  ✓ Added user_email field to CompanyCreateSerializer
+  ✓ Added validation for user existence and ownership
+  ✓ Created Owner record in transaction
+  ✓ Updated frontend to send user_email from session
+  ✓ Added proper error handling for owner creation
+
+## Task Dependencies
+- FE-004 depends on BE-001, BE-002, BE-003, BE-004 ✓
+- BE-002 depends on BE-001 ✓
+- BE-003 depends on BE-001, BE-002 ✓
+- BE-004 depends on BE-003 ✓
+
+## Notes
+- Tasks marked with [x] are completed
+- Tasks marked with [ ] are pending
+- ✓ indicates completed sub-tasks
+- ✓ after dependency means it's satisfied
+
+## Next Steps
+1. Research and implement proper session update mechanism (FE-004)
+2. Consider implementing token refresh with company data
+3. Add comprehensive testing for company creation flow
+4. Consider adding company profile completion status tracking
+

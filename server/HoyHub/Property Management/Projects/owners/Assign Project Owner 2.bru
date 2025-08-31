@@ -1,0 +1,41 @@
+meta {
+  name: Assign Project Owner
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base}}projects/c0775c36-6c0c-4745-a4e9-38c4faf87fff/owners/assign
+  body: json
+  auth: inherit
+}
+
+body:json {
+  // {
+  //   "owner_id": "550e8400-e29b-41d4-a716-446655440000",
+  //   "houses": [
+  //     {
+  //       "house_id": "550e8400-e29b-41d4-a716-446655440002",
+  //       "type": "HOUSE",
+  //     },
+  //     {
+  //       "house_id": "550e8400-e29b-41d4-a716-446655440003",
+  //       "type": "HOUSE",
+  //     }
+  //   ]
+  // }
+  
+  
+  
+  // For Appartments
+  
+  {
+      "owner_id": "cd82ddf1-7cea-4a4a-8ef7-6f8750a21913",
+      "properties": [
+          {
+              "unit_id": "4b6b4e9d-eb5f-4b6b-bf6e-4e477da3dadf",
+              "type": "UNIT"
+          }
+      ]
+  }
+}

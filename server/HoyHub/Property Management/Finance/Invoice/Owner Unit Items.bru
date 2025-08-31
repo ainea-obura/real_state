@@ -1,0 +1,15 @@
+meta {
+  name: Owner Unit Items
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base}}finance/invoices/owner-node-items?owner_id=d5301373-bd52-42e6-8e5e-5e2d3ed2d322
+  body: none
+  auth: inherit
+}
+
+params:query {
+  owner_id: d5301373-bd52-42e6-8e5e-5e2d3ed2d322
+}

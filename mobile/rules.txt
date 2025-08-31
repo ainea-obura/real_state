@@ -1,0 +1,252 @@
+# REAL STATE FRONTEND DESIGN SYSTEM RULES
+
+## 🎨 COLOR SYSTEM
+
+### Primary Colors
+- **Primary**: hsl(238.73 83.53% 66.67%) - Main brand color (purple/indigo)
+- **Primary Foreground**: hsl(0 0% 100%) - Text on primary backgrounds
+- **Secondary**: hsl(220 13.04% 90.98%) - Secondary actions and backgrounds
+- **Secondary Foreground**: hsl(216.92 19.12% 26.67%) - Text on secondary backgrounds
+
+### Semantic Colors
+- **Success**: hsl(142.1 76.2% 36.3%) - Success states, confirmations
+- **Warning**: hsl(38 92% 50%) - Warning states, alerts
+- **Error/Destructive**: hsl(0 84.24% 60.20%) - Error states, deletions
+- **Info**: hsl(199 89% 48%) - Information states, links
+
+### Background Colors
+- **Background**: hsl(210.00 40.00% 98.04%) - Main page background (light blue-gray)
+- **Card**: hsl(0 0% 100%) - Card and component backgrounds
+- **Muted**: hsl(220.00 14.29% 95.88%) - Subtle backgrounds
+- **Accent**: hsl(226.45 100% 93.92%) - Accent backgrounds
+
+### Text Colors
+- **Foreground**: hsl(217.24 32.58% 17.45%) - Primary text color
+- **Muted Foreground**: hsl(220 8.94% 46.08%) - Secondary text color
+- **Card Foreground**: hsl(217.24 32.58% 17.45%) - Text on cards
+
+### Border & Input Colors
+- **Border**: hsl(216.00 12.20% 83.92%) - Default borders
+- **Input**: hsl(216.00 12.20% 83.92%) - Input field borders
+- **Ring**: hsl(238.73 83.53% 66.67%) - Focus ring color (matches primary)
+
+## 🌙 DARK MODE COLORS
+
+### Dark Backgrounds
+- **Background**: hsl(222.22 47.37% 11.18%) - Dark page background
+- **Card**: hsl(217.24 32.58% 17.45%) - Dark card backgrounds
+- **Muted**: hsl(217.24 32.58% 17.45%) - Dark muted backgrounds
+
+### Dark Text
+- **Foreground**: hsl(214.29 31.82% 91.37%) - Light text on dark backgrounds
+- **Muted Foreground**: hsl(217.89 10.61% 64.90%) - Secondary text on dark
+
+## 📏 SPACING SYSTEM
+
+### Base Spacing (Tailwind CSS)
+- **0**: 0px
+- **1**: 0.25rem (4px)
+- **2**: 0.5rem (8px)
+- **3**: 0.75rem (12px)
+- **4**: 1rem (16px)
+- **5**: 1.25rem (20px)
+- **6**: 1.5rem (24px)
+- **8**: 2rem (32px)
+- **10**: 2.5rem (40px)
+- **12**: 3rem (48px)
+- **16**: 4rem (64px)
+- **20**: 5rem (80px)
+- **24**: 6rem (96px)
+
+### Component Spacing
+- **Card Padding**: px-6 py-6 (24px horizontal, 24px vertical)
+- **Section Gaps**: space-y-6 (24px between sections)
+- **Grid Gaps**: gap-6 (24px between grid items)
+- **Button Padding**: px-4 py-2 (16px horizontal, 8px vertical)
+
+## 🔤 TYPOGRAPHY
+
+### Font Family
+- **Primary**: Poppins (Google Fonts)
+- **Weights**: 300, 400, 500, 600, 700, 800
+- **Fallback**: Inter, sans-serif
+
+### Font Sizes
+- **xs**: 0.75rem (12px) - Small labels, captions
+- **sm**: 0.875rem (14px) - Body text, descriptions
+- **base**: 1rem (16px) - Default body text
+- **lg**: 1.125rem (18px) - Large body text
+- **xl**: 1.25rem (20px) - Section headings
+- **2xl**: 1.5rem (24px) - Page headings
+- **3xl**: 1.875rem (30px) - Large headings
+
+### Font Weights
+- **300**: Light
+- **400**: Regular
+- **500**: Medium
+- **600**: Semibold
+- **700**: Bold
+- **800**: Extra Bold
+
+## 🎭 COMPONENT PATTERNS
+
+### Button Variants
+- **Default**: Primary background with white text
+- **Secondary**: Light gray background with dark text
+- **Outline**: Transparent with border
+- **Ghost**: Transparent with hover effects
+- **Destructive**: Red background for dangerous actions
+- **Link**: Text-only with underline on hover
+
+### Button Sizes
+- **sm**: h-8 px-3 (32px height, 12px horizontal padding)
+- **default**: h-9 px-4 (36px height, 16px horizontal padding)
+- **lg**: h-11 px-6 (44px height, 24px horizontal padding)
+- **icon**: size-9 (36px square)
+
+### Card Design
+- **Background**: White/transparent with subtle borders
+- **Border Radius**: rounded-xl (12px)
+- **Shadow**: shadow-sm (subtle elevation)
+- **Padding**: px-6 py-6 (24px all around)
+- **Hover Effects**: hover:scale-[1.02] with smooth transitions
+
+### Input Fields
+- **Height**: h-11 (44px)
+- **Border Radius**: rounded-md (6px)
+- **Focus State**: Blue ring with border color change
+- **Padding**: px-3 py-1 (12px horizontal, 4px vertical)
+- **Border**: Subtle gray border with focus ring
+
+## 🎨 SHADOW SYSTEM
+
+### Shadow Variants
+- **shadow-2xs**: 0px 4px 8px -1px hsl(0 0% 0% / 0.05) - Very subtle
+- **shadow-xs**: 0px 4px 8px -1px hsl(0 0% 0% / 0.05) - Extra small
+- **shadow-sm**: 0px 4px 8px -1px hsl(0 0% 0% / 0.10) - Small
+- **shadow**: 0px 4px 8px -1px hsl(0 0% 0% / 0.10) - Default
+- **shadow-md**: 0px 4px 8px -1px hsl(0 0% 0% / 0.10) - Medium
+- **shadow-lg**: 0px 4px 8px -1px hsl(0 0% 0% / 0.10) - Large
+- **shadow-xl**: 0px 4px 8px -1px hsl(0 0% 0% / 0.10) - Extra large
+- **shadow-2xl**: 0px 4px 8px -1px hsl(0 0% 0% / 0.25) - Very large
+
+## 🔄 TRANSITIONS & ANIMATIONS
+
+### Transition Classes
+- **transition-all**: All properties transition smoothly
+- **transition-colors**: Color changes only
+- **duration-200**: 200ms transition duration
+- **duration-300**: 300ms transition duration
+- **ease-in-out**: Smooth acceleration and deceleration
+
+### Hover Effects
+- **hover:scale-[1.02]**: Subtle 2% scale increase on hover
+- **hover:bg-primary/90**: Primary color with 90% opacity on hover
+- **hover:shadow-lg**: Larger shadow on hover
+
+## 📱 RESPONSIVE DESIGN
+
+### Breakpoints
+- **sm**: 640px and up
+- **md**: 768px and up
+- **lg**: 1024px and up
+- **xl**: 1280px and up
+- **2xl**: 1536px and up
+
+### Responsive Patterns
+- **Grid Layouts**: md:grid-cols-2, lg:grid-cols-3
+- **Padding**: px-6 md:px-40 (6px on mobile, 40px on medium+)
+- **Spacing**: gap-4 md:gap-6 (16px on mobile, 24px on medium+)
+
+## 🎯 LAYOUT PATTERNS
+
+### Page Structure
+- **Container**: max-w-7xl mx-auto (centered with max width)
+- **Padding**: px-6 md:px-40 (responsive horizontal padding)
+- **Gaps**: space-y-6 (consistent vertical spacing)
+- **Background**: bg-blue-50 (light blue background)
+
+### Grid Systems
+- **2 Columns**: grid-cols-2 gap-6
+- **3 Columns**: grid-cols-3 gap-6
+- **Responsive**: md:grid-cols-2 lg:grid-cols-3
+
+### Flexbox Patterns
+- **Center**: flex items-center justify-center
+- **Between**: flex justify-between items-center
+- **Start**: flex items-start justify-start
+- **End**: flex items-center justify-end
+
+## 🧩 COMPONENT ARCHITECTURE
+
+### Design Principles
+- **Consistency**: Use predefined variants and sizes
+- **Accessibility**: Proper focus states and ARIA labels
+- **Performance**: Minimal re-renders with proper state management
+- **Maintainability**: Reusable components with clear APIs
+
+### Component Structure
+- **Props Interface**: Clear TypeScript interfaces
+- **Default Values**: Sensible defaults for all props
+- **Variants**: Use cva (class-variance-authority) for variants
+- **Composition**: Prefer composition over inheritance
+
+### State Management
+- **Local State**: useState for component-specific state
+- **Global State**: Zustand for app-wide state
+- **Server State**: React Query for API data
+- **Form State**: React Hook Form for form management
+
+## 🎨 ICON SYSTEM
+
+### Icon Library
+- **Primary**: Lucide React (lucide-react)
+- **Size Classes**: w-4 h-4, w-5 h-5, w-6 h-6
+- **Color**: Inherit from parent or use semantic colors
+- **Alignment**: flex items-center gap-2 for icon + text
+
+### Icon Usage
+- **Action Icons**: Use semantic colors (success, warning, error)
+- **Decorative Icons**: Use muted colors
+- **Interactive Icons**: Include hover states
+- **Accessibility**: Always include aria-label for screen readers
+
+## 🔧 UTILITY CLASSES
+
+### Common Utilities
+- **cn()**: Use cn() function for conditional classes
+- **clsx**: For complex conditional logic
+- **twMerge**: For merging Tailwind classes without conflicts
+
+### Layout Utilities
+- **Container**: max-w-7xl mx-auto px-6
+- **Section**: space-y-6
+- **Card**: bg-card border rounded-xl shadow-sm
+- **Button**: Use buttonVariants for consistent styling
+
+## 📋 IMPLEMENTATION GUIDELINES
+
+### Do's
+- ✅ Use predefined color variables from CSS
+- ✅ Follow the spacing system (4px increments)
+- ✅ Use component variants instead of custom classes
+- ✅ Implement proper hover and focus states
+- ✅ Use semantic color names for different states
+- ✅ Follow responsive design patterns
+
+### Don'ts
+- ❌ Don't use hardcoded colors
+- ❌ Don't create custom spacing values
+- ❌ Don't override component variants unnecessarily
+- ❌ Don't skip hover and focus states
+- ❌ Don't use non-semantic colors for states
+- ❌ Don't ignore responsive design
+
+### File Organization
+- **Components**: /components/ui/ for base components
+- **Features**: /features/ for feature-specific components
+- **Utils**: /lib/utils.ts for utility functions
+- **Types**: /types/ for TypeScript interfaces
+- **Hooks**: /hooks/ for custom React hooks
+
+This design system ensures consistency, accessibility, and maintainability across the entire Real State frontend application.

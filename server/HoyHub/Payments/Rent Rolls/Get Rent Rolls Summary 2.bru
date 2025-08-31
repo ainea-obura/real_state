@@ -1,0 +1,16 @@
+meta {
+  name: Get Rent Rolls Summary
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base}}finance/rent-roll/summary/?date_from2025-07-01&date_to=2025-07-24
+  body: none
+  auth: inherit
+}
+
+params:query {
+  date_from2025-07-01: 
+  date_to: 2025-07-24
+}

@@ -1,0 +1,48 @@
+meta {
+  name: Create Template Document
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base}}documents/create/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "template_title": "Standard Residential Lease Agreement",
+    "template_description": "A professional template for residential property rental.",
+    "template_type": "rent",
+    "template_content": "<h1>Lease Agreement</h1><p>This contract is between {{landlord_name}} and {{tenant_name}} for the property at {{property_address}}.</p>",
+    "available_variables": {
+      "landlord_name": {
+        "variable_name": "landlord_name",
+        "display_name": "Landlord Name",
+        "category": "landlord_info",
+        "data_type": "text",
+        "is_required": true,
+        "description": "Full name of the landlord"
+      },
+      "tenant_name": {
+        "variable_name": "tenant_name",
+        "display_name": "Tenant Name",
+        "category": "tenant_info",
+        "data_type": "text",
+        "is_required": true,
+        "description": "Full name of the tenant"
+      },
+      "property_address": {
+        "variable_name": "property_address",
+        "display_name": "Property Address",
+        "category": "property_info",
+        "data_type": "address",
+        "is_required": true,
+        "description": "Address of the rental property"
+      }
+    },
+    "is_active": true,
+    "is_default": false
+  }
+}

@@ -1,0 +1,70 @@
+services:
+  minio:
+    image: minio/minio
+    container_name: minio
+    hostname: minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
+      MINIO_BROWSER_REDIRECT_URL: "http://127.0.0.1:9000/"
+      MINIO_SERVER_URL: "http://127.0.0.1:9000"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - minio_network
+
+  minio_setup:
+    image: minio/mc
+    container_name: minio_setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
+    entrypoint: |
+      /bin/sh -c '
+      echo "=== STARTING MINIO SETUP ===";
+      # wait for MinIO to be ready
+      sleep 10;
+
+      echo "[2/6] Configuring alias…";
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD || { echo "[ERROR] alias"; exit 1; };
+
+      echo "[3/6] Creating user…";
+      mc admin user add local $$MINIO_ACCESS_KEY $$MINIO_SECRET_KEY || echo "[WARN] user exists";
+
+
+      echo "[4/6] Creating buckets…";
+      mc mb local/media --ignore-existing || { echo "[ERROR] media bucket"; exit 1; };
+      mc mb local/static --ignore-existing || { echo "[ERROR] static bucket"; exit 1; };
+
+      echo "[5/6] Setting permissions…";
+      mc anonymous set download local/static || echo "[WARN] anon download";
+      mc policy set public local/static || echo "[WARN] public static";
+
+      echo "[6/6] === SETUP COMPLETE ===";
+      '
+
+    networks:
+      - minio_network
+
+volumes:
+  minio_data:
+
+
+networks:
+  minio_network:
+    driver: bridge

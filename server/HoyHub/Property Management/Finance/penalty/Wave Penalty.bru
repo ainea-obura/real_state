@@ -1,0 +1,18 @@
+meta {
+  name: Wave Penalty
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{base}}penalties/3daddeea-cb27-4939-b33d-f02fbaef1fc8/waive/
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+  
+         "waived_reason":"hello"
+    }
+}

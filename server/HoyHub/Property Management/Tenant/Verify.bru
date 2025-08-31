@@ -1,0 +1,23 @@
+meta {
+  name: Verify
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base}}projects/tenants/verify
+  body: multipartForm
+  auth: inherit
+}
+
+body:json {
+  {
+    "verification_id": "255b0c0f-2223-431c-bfad-c751bd28a4a9"
+  }
+}
+
+body:multipart-form {
+  tenant_id: {{tenant_id}}
+  id_number: SO12222
+  document_image: @file(/Users/mhbaando/Documents/bg-01.png)
+}

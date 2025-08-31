@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: bugsink
+      POSTGRES_USER: bugsinkuser
+      POSTGRES_PASSWORD: bugsinkpassword
+    volumes:
+      - bugsink-db-data:/var/lib/postgresql/data
+
+  bugsink:
+    image: bugsink/bugsink:latest
+    restart: always
+    depends_on:
+      - db
+    environment:
+      SECRET_KEY: ${BUGSINK_KEY}
+      CREATE_SUPERUSER: ${CREATE_SUPERUSER}
+      PORT: 6000
+      DATABASE_URL: postgres://bugsinkuser:bugsinkpassword@db:5432/bugsink
+    ports:
+      - "4000:6000"
+    volumes:
+      - bugsink-data:/data
+
+volumes:
+  bugsink-db-data:
+  bugsink-data:

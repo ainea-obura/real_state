@@ -1,0 +1,16 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base}}auth/login/
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  email: mansuurtech101@gmail.com
+  password: mansuurtech101!
+}

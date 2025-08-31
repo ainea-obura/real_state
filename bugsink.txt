@@ -1,0 +1,142 @@
+# Bugsink Setup, Troubleshooting, and Installation Guide
+
+## 1. Initial Goal
+- Set up Bugsink (self-hosted Sentry-compatible error tracker) for a Django project and Next.js frontend.
+- Use Postgres as the database backend for Bugsink.
+- Capture all Django and Next.js errors automatically, with a web UI for error review.
+
+---
+
+## 2. Installation Steps
+
+### Step 1: Prepare Docker Compose
+- Created `bugsink-docker-compose.yml` with two services: `db` (Postgres) and `bugsink`.
+- Used environment variables for sensitive data (user, password, secret key).
+- Example port mapping: `4000:8000` (host:container).
+
+### Step 2: Create `.env` File
+- Created a `.env` file in the same directory as the compose file with:
+  - `DB_USER=bugsink`
+  - `DB_PASSWORD=bugsinkpassword`
+  - `BUGSINK_KEY=<your_strong_secret_key>`
+  - `CREATE_SUPERUSER=hoyhub:@hoyHub@@252`
+- **Note:** Generated a strong secret key using:
+  ```sh
+  python -c "import secrets; print(secrets.token_urlsafe(64))"
+  ```
+
+### Step 3: Start Bugsink and Postgres
+- Ran:
+  ```sh
+  docker compose -f bugsink-docker-compose.yml up -d
+  ```
+- Accessed the UI at [http://localhost:4000](http://localhost:4000).
+
+### Step 4: Create Project in Bugsink
+- Logged in with superuser credentials.
+- Created a new project (e.g., `real-state`).
+- Copied the DSN (Data Source Name) for the project.
+
+### Step 5: Integrate with Django
+- Installed Sentry SDK:
+  ```sh
+  pip install sentry-sdk
+  ```
+- Added to Django `settings.py`:
+  ```python
+  import sentry_sdk
+  from sentry_sdk.integrations.django import DjangoIntegration
+
+  sentry_sdk.init(
+      dsn="http://<project_key>@localhost:4000/1",  # Use your actual DSN
+      integrations=[DjangoIntegration()],
+      send_default_pii=True,
+  )
+  ```
+- Restarted Django server.
+
+### Step 6: Integrate with Next.js (Frontend)
+- Installed Sentry SDK:
+  ```sh
+  npm install @sentry/nextjs
+  ```
+- In `.env.local` (Next.js project root), added:
+  ```env
+  NEXT_PUBLIC_SENTRY_DSN=http://<project_key>@localhost:4000/<project_id>
+  SENTRY_DSN=http://<project_key>@localhost:4000/<project_id>
+  ```
+- In `sentry.client.config.js` and `sentry.server.config.js`:
+  ```js
+  import * as Sentry from "@sentry/nextjs";
+
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+    debug: true, // Enable debug logging
+    tracesSampleRate: 1.0,
+    // ...other options
+  });
+  ```
+- After changing `.env.local`, **restart the Next.js dev server**:
+  ```sh
+  npm run dev
+  ```
+- To test, throw an error in a React component or use:
+  ```js
+  import * as Sentry from "@sentry/nextjs";
+  Sentry.captureException(new Error("Manual Bugsink test error!"));
+  ```
+- Check the browser Network tab for requests to `/envelope/` or `/store/` and the Bugsink UI for new errors.
+
+---
+
+## 3. Problems Encountered & Solutions
+
+### Problem: Bugsink UI not reachable at `localhost:4000`
+- **Cause:** Port mapping mismatch or Bugsink running on a different port inside the container.
+- **Fix:** Ensured Docker Compose had `ports: ["4000:8000"]` if Bugsink listens on 8000 internally.
+
+### Problem: Sentry SDK sending to `/envelope/` endpoint, getting 404
+- **Cause:** DSN used wrong port or Bugsink version did not support `/envelope/` endpoint.
+- **Fix:**
+  - Used correct port in DSN (should match host port, e.g., `4000`).
+  - If still failing, used `/api/1/store/` endpoint in DSN.
+
+### Problem: Django SECRET_KEY warning (too short/insecure)
+- **Cause:** Weak or default secret key.
+- **Fix:** Generated a strong, random key and updated `.env` and Docker Compose.
+
+### Problem: Celery WorkerLostError (SIGSEGV)
+- **Cause:** Native library crash, resource limits, or Python/Celery version mismatch.
+- **Fix:**
+  - Checked for C extension usage in tasks.
+  - Ensured enough system resources.
+  - Used stable Python version (3.10/3.11 recommended).
+  - Updated Celery and billiard packages.
+
+### Problem: Next.js errors not showing in Bugsink
+- **Cause:**
+  - Missing `NEXT_PUBLIC_` prefix for client-side DSN.
+  - Not restarting dev server after env change.
+  - CORS issues or ad-blockers blocking requests.
+  - Bugsink not accessible from frontend.
+- **Fix:**
+  - Use `NEXT_PUBLIC_SENTRY_DSN` in `.env.local`.
+  - Restart dev server after changes.
+  - Check browser Network tab and console for errors.
+  - Allow CORS on Bugsink server if needed.
+  - Disable ad-blockers.
+
+---
+
+## 4. Summary of How to Install (Quick Reference)
+
+1. **Create `bugsink-docker-compose.yml` and `.env` with strong secrets.**
+2. **Run** `docker compose -f bugsink-docker-compose.yml up -d`.
+3. **Access Bugsink UI** at `http://localhost:4000` and create a project.
+4. **Copy DSN** and add Sentry SDK to Django and Next.js with the correct DSN.
+5. **Restart Django and Next.js** and test error reporting.
+6. **Troubleshoot** using the solutions above if you hit issues.
+
+---
+
+**This file documents the full process, problems, and solutions for future reference.**
