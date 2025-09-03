@@ -261,7 +261,7 @@ class Signup(APIView):
         username = email.split("@")[0]
 
         user = Users.objects.create_user(
-            email=email, username=username, password=password, type="company"
+            email=email, username=username, password=password, type="company", phone=""
         )
 
         return email_otp_generator(user)
