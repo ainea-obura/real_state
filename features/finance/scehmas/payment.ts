@@ -96,7 +96,14 @@ export const PaymentTableItemSchema = z.object({
     projectName: z.string(),
   }),
   paymentDate: z.string(),
-  paymentMethod: z.string(),
+  paymentMethod: z.enum([
+    "cash",
+    "bank_transfer",
+    "online",
+    "evc_plus",
+    "mpesa",
+    "other",
+  ]),
   amountPaid: z.string(),
   amountPaidNoCurrency: z.number(),
   invoicesApplied: z.array(
@@ -107,7 +114,7 @@ export const PaymentTableItemSchema = z.object({
     })
   ),
   balanceRemaining: z.string(),
-  status: z.string(),
+  status: z.enum(["success", "failed", "refunded", "partial", "pending"]),
   notes: z.string().optional(),
   receiptUrl: z.string().nullable(),
   createdBy: z.string(),

@@ -2,7 +2,7 @@
 
 import { useAtom } from 'jotai';
 import {
-    AlertTriangle, CheckCircle, Clock, Coins, Download, Eye, FileText, Plus, Receipt, Settings, XCircle,
+    AlertTriangle, CheckCircle, Clock, Coins, Download, Eye, FileSpreadsheet, FileText, Plus, Receipt, Settings, XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -24,6 +24,7 @@ import { columns } from "../columns";
 import EditInvoiceModal from "./EditInvoiceModal";
 import SendInvoiceModal from "./SendInvoiceModal";
 import CreditNoteModal from "./CreditNoteModal";
+import InvoiceExcelUploadModal from "./InvoiceExcelUploadModal";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { InvoiceStats, InvoiceTableItem, InvoiceTableResponse } from "@/features/finance/scehmas/invoice";
 import { pageIndexAtom, pageSizeAtom } from "@/store";
@@ -200,6 +201,7 @@ const InvoiceList = ({
   const [creditInvoice, setCreditInvoice] = useState<InvoiceTableItem | null>(null);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [verifyCollectionModal, setVerifyCollectionModal] = useState<InvoiceTableItem | null>(null);
+  const [excelUploadModalOpen, setExcelUploadModalOpen] = useState(false);
 
   // Stat card values (fallback to 0 if loading/error)
   const totalInvoices = invoiceStats?.totalInvoices ?? 0;
@@ -338,6 +340,18 @@ const InvoiceList = ({
             <Settings className="mr-2 w-4 h-4" />
             Settings
           </Button>
+
+          {/* Excel Upload Button */}
+          <PermissionGate codename="add_invoices" showFallback={false}>
+            <Button 
+              onClick={() => setExcelUploadModalOpen(true)} 
+              variant="outline"
+              className="h-10"
+            >
+              <FileSpreadsheet className="mr-2 w-4 h-4" />
+              Upload Excel
+            </Button>
+          </PermissionGate>
 
           {/* Create Invoice Button */}
           <PermissionGate codename="add_invoices" showFallback={false}>
@@ -528,6 +542,16 @@ const InvoiceList = ({
           confirmationPhrase="CANCEL"
         />
       )}
+
+      {/* Excel Upload Modal */}
+      <InvoiceExcelUploadModal
+        isOpen={excelUploadModalOpen}
+        onClose={() => setExcelUploadModalOpen(false)}
+        onInvoicesUpdated={() => {
+          // Refresh the invoice list
+          queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        }}
+      />
     </div>
   );
 };

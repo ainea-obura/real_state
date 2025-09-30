@@ -136,8 +136,6 @@ class PaymentCallBackView(APIView):
             invoice=invoice,
             paid_amount=trans_amount_decimal,
             balance=new_balance,
-            payment_method=transaction.payment_method
-            or "unknown",  # Use actual payment method from transaction
         )
         invoice.balance = new_balance
         if invoice.balance == 0:
@@ -179,8 +177,6 @@ class PaymentCallBackView(APIView):
                     invoice=invoice,
                     paid_amount=applied_amount,
                     balance=new_balance,
-                    payment_method=transaction.payment_method
-                    or "unknown",  # Use actual payment method from transaction
                 )
 
                 # Update invoice status and balance
@@ -386,8 +382,7 @@ class CreditNoteCallBackView(APIView):
                         invoice=invoice,
                         paid_amount=-credit_amount,  # Negative amount for credit
                         balance=invoice.balance,
-                        payment_method=transaction.payment_method
-                        or "credit_note",  # Use actual payment method if available
+                        payment_method="credit_note",
                         notes=f"Credit note: {reason} - {description}",
                     )
 

@@ -245,7 +245,16 @@ class Signup(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Company restriction removed - allowing multiple companies to register
+        # Check if a company exists in the database
+        company = Company.objects.filter().exists()
+        if company:
+            return Response(
+                {
+                    "error": False,
+                    "message": "Signup is disabled: a company already exists.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # Check if the `email` exists
         check = Users.objects.filter(email=email)
@@ -261,7 +270,7 @@ class Signup(APIView):
         username = email.split("@")[0]
 
         user = Users.objects.create_user(
-            email=email, username=username, password=password, type="company", phone=""
+            email=email, username=username, password=password, type="company"
         )
 
         return email_otp_generator(user)

@@ -13,6 +13,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -535,207 +536,6 @@ class InvoiceTableListView(ListAPIView):
 
 @extend_schema(
     tags=["Invoices"],
-    description="Get all invoices for a specific tenant. 'user_id' is required. Returns paginated list of invoices with property details.",
-)
-@method_decorator(
-    ratelimit(key="ip", rate="20/m", method="GET", block=True),
-    name="dispatch",
-)
-class TenantInvoicesView(ListAPIView):
-    serializer_class = InvoiceTableItemSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user_id = self.request.query_params.get("user_id")
-        if not user_id:
-            return Invoice.objects.none()
-
-        # Get invoices where the user is a tenant
-        return (
-            Invoice.objects.filter(tenants__tenant_user_id=user_id, is_deleted=False)
-            .select_related("property")
-            .prefetch_related("tenants__tenant_user", "tenants__node")
-            .order_by("-issue_date", "-created_at")
-        )
-
-    def list(self, request, *args, **kwargs):
-        user_id = request.query_params.get("user_id")
-        if not user_id:
-            return Response(
-                {"error": True, "message": "'user_id' parameter is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        qs = self.get_queryset()
-
-        serializer = self.get_serializer(qs, many=True)
-        data = {
-            "count": qs.count(),
-            "results": serializer.data,
-        }
-        return Response({"error": False, "data": data})
-
-
-@extend_schema(
-    tags=["Invoices"],
-    description="Get all invoices for a specific owner. 'user_id' is required. Returns paginated list of invoices with property details.",
-)
-@method_decorator(
-    ratelimit(key="ip", rate="20/m", method="GET", block=True),
-    name="dispatch",
-)
-class OwnerInvoicesView(ListAPIView):
-    serializer_class = InvoiceTableItemSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user_id = self.request.query_params.get("user_id")
-        if not user_id:
-            return Invoice.objects.none()
-
-        # Get invoices where the user is an owner
-        return (
-            Invoice.objects.filter(owners__owner_user_id=user_id, is_deleted=False)
-            .select_related("property")
-            .prefetch_related("owners__owner_user", "owners__node")
-            .order_by("-issue_date", "-created_at")
-        )
-
-    def list(self, request, *args, **kwargs):
-        user_id = request.query_params.get("user_id")
-        if not user_id:
-            return Response(
-                {"error": True, "message": "'user_id' parameter is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        qs = self.get_queryset()
-
-        serializer = self.get_serializer(qs, many=True)
-        data = {
-            "count": qs.count(),
-            "results": serializer.data,
-        }
-        return Response({"error": False, "data": data})
-
-
-@extend_schema(
-    tags=["Invoices"],
-    description="Get invoice details and payment history for a specific invoice. 'invoice_id' is required.",
-)
-@method_decorator(
-    ratelimit(key="ip", rate="20/m", method="GET", block=True),
-    name="dispatch",
-)
-class InvoiceDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, invoice_id):
-        try:
-            invoice = (
-                Invoice.objects.select_related("property")
-                .prefetch_related(
-                    "tenants__tenant_user", "tenants__node", "items", "receipts"
-                )
-                .get(id=invoice_id, is_deleted=False)
-            )
-        except Invoice.DoesNotExist:
-            return Response(
-                {"error": True, "message": "Invoice not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Get invoice details
-        invoice_data = {
-            "id": str(invoice.id),
-            "invoice_number": invoice.invoice_number,
-            "description": invoice.description,
-            "total_amount": format_money_with_currency(invoice.total_amount),
-            "balance": format_money_with_currency(invoice.balance),
-            "status": invoice.status,
-            "issue_date": invoice.issue_date.isoformat(),
-            "due_date": invoice.due_date.isoformat(),
-            "currency": "USD",  # Default currency since Invoice doesn't have currency field
-            "property_name": invoice.property.name,
-            "property_address": self._get_property_address(invoice.property),
-        }
-
-        # Get invoice items for THIS specific invoice only
-        items = []
-        print(f"DEBUG: Invoice ID: {invoice.id}")
-        print(f"DEBUG: Invoice items count: {invoice.items.count()}")
-
-        for (
-            item
-        ) in invoice.items.all():  # This should already be filtered by the invoice
-            print(f"DEBUG: Processing item {item.id} for invoice {item.invoice.id}")
-            items.append(
-                {
-                    "id": str(item.id),
-                    "description": item.name,
-                    "type": item.type,
-                    "quantity": float(item.quantity),
-                    "amount": format_money_with_currency(item.amount),
-                    "price": format_money_with_currency(item.price),
-                    "rate": format_money_with_currency(item.amount)
-                    if item.quantity == 1
-                    else format_money_with_currency(item.amount / item.quantity),
-                    "node_name": getattr(item, "node_name", "") or "",
-                    "percentage_rate": getattr(item, "percentage_rate", None),
-                    "service_id": str(item.service.id) if item.service else None,
-                    "penalty_id": str(item.penalty.id) if item.penalty else None,
-                    "invoice_id": str(
-                        invoice.id
-                    ),  # Add invoice_id for frontend filtering
-                }
-            )
-
-        print(f"DEBUG: Final items count: {len(items)}")
-
-        # Get payment history
-        payments = []
-        for receipt in invoice.receipts.all():
-            payments.append(
-                {
-                    "id": str(receipt.id),
-                    "transaction_id": f"TXN-{receipt.receipt_number}",
-                    "amount": format_money_with_currency(receipt.paid_amount),
-                    "payment_method": receipt.payment_method,
-                    "status": "Completed",
-                    "payment_date": receipt.payment_date.isoformat(),
-                    "currency": "USD",  # Default currency since Invoice doesn't have currency field
-                    "notes": receipt.notes or "",
-                }
-            )
-
-        data = {
-            "invoice": invoice_data,
-            "items": items,
-            "payments": payments,
-        }
-
-        print("data", data)
-
-        return Response({"error": False, "data": data}, status=status.HTTP_200_OK)
-
-    def _get_property_address(self, property_node):
-        """Get formatted property address from location node"""
-        try:
-            # Get project details if available
-            if (
-                hasattr(property_node, "project_detail")
-                and property_node.project_detail
-            ):
-                return property_node.project_detail.address
-            else:
-                # Fallback to property name
-                return property_node.name
-        except:
-            return property_node.name
-
-
-@extend_schema(
-    tags=["Invoices"],
     description="Update an invoice's variable items and status. Only variable items are accepted. Pass type as 'draft' or 'issued'.",
 )
 @method_decorator(
@@ -1053,3 +853,364 @@ class InvoiceDownloadPDFView(APIView):
                 {"error": True, "message": f"Error downloading PDF: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+@extend_schema(
+    tags=["Invoices"],
+    description="Bulk upload invoices from Excel format. Creates multiple invoices in one atomic transaction.",
+    request=dict,
+    responses={201: dict},
+)
+@method_decorator(
+    ratelimit(key="ip", rate="2/m", method="POST", block=True),
+    name="dispatch",
+)
+class BulkInvoiceUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        print("🚀 Backend: BulkInvoiceUploadView.post() called")
+        print("🚀 Backend: Request data type:", type(request.data))
+        print("🚀 Backend: Request data:", request.data)
+        
+        # Validate request data
+        if not isinstance(request.data, list) or len(request.data) == 0:
+            print("❌ Backend: Invalid request data - not a list or empty")
+            return Response(
+                {
+                    "error": True,
+                    "message": "At least one invoice row must be provided.",
+                    "data": None,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate each row has required fields
+        for i, row in enumerate(request.data):
+            if not isinstance(row, dict):
+                return Response(
+                    {
+                        "error": True,
+                        "message": f"Row {i + 1} must be an object.",
+                        "data": None,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Map your Excel column names to expected field names
+            mapped_row = {}
+            
+            # Required field mappings
+            field_mappings = {
+                "client_type": ["Client Type", "client_type"],
+                "customer_name": ["Customer Name", "customer_name"],
+                "invoice_date": ["Invoice Date", "invoice_date"],
+                "due_date": ["Due Date", "due_date"],
+                "invoice_type": ["Invoice Type", "invoice_type"],
+                "total_amount": ["Total", "total_amount"],
+            }
+            
+            # Map fields
+            for expected_field, possible_keys in field_mappings.items():
+                value = None
+                for key in possible_keys:
+                    if key in row and row[key]:
+                        value = row[key]
+                        break
+                
+                if value is None:
+                    return Response(
+                        {
+                            "error": True,
+                            "message": f"Row {i + 1} missing required field: {possible_keys[0]}",
+                            "data": None,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                
+                mapped_row[expected_field] = value
+            
+            # Map optional fields
+            optional_mappings = {
+                "balance": ["Balance", "balance"],
+                "paid_date": ["Paid Date", "paid_date"],
+                "notes": ["Notes", "notes"],
+                "invoice_subject": ["Invoice Subject", "invoice_subject"],
+                "house_number": ["House No.", "house_number", "House Number"],
+                "project_id": ["Project ID", "project_id"],
+                "client_phone": ["Client Phone", "client_phone"],
+                "invoice_id": ["Invoice ID", "invoice_id"],
+                "invoice_number": ["Invoice Number", "invoice_number"],
+                "client_id_or_phone": ["Client ID or Phone", "client_id_or_phone"],
+            }
+            
+            for expected_field, possible_keys in optional_mappings.items():
+                for key in possible_keys:
+                    if key in row:
+                        mapped_row[expected_field] = row[key]
+                        break
+            
+            # Validate client_type field (handle both cases)
+            client_type = mapped_row["client_type"].strip()
+            if client_type.lower() not in ["owner", "tenant", "vendor"]:
+                return Response(
+                    {
+                        "error": True,
+                        "message": f"Row {i + 1}: Client Type must be 'Owner', 'Tenant', or 'Vendor' (case insensitive)",
+                        "data": None,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            # Normalize client_type to lowercase
+            mapped_row["client_type"] = client_type.lower()
+
+        # Process bulk upload with transaction
+        results = []
+        created_count = 0
+        
+        print("🚀 Backend: Starting bulk invoice upload processing...")
+        
+        with transaction.atomic():
+            for i, row in enumerate(request.data):
+                try:
+                    print(f"🚀 Backend: Processing invoice row {i + 1}: {row}")
+                    
+                    # Map your Excel column names to expected field names
+                    mapped_row = {}
+                    
+                    # Required field mappings
+                    field_mappings = {
+                        "client_type": ["Client Type", "client_type"],
+                        "customer_name": ["Customer Name", "customer_name"],
+                        "invoice_date": ["Invoice Date", "invoice_date"],
+                        "due_date": ["Due Date", "due_date"],
+                        "invoice_type": ["Invoice Type", "invoice_type"],
+                        "total_amount": ["Total", "total_amount"],
+                    }
+                    
+                    # Map fields
+                    for expected_field, possible_keys in field_mappings.items():
+                        value = None
+                        for key in possible_keys:
+                            if key in row and row[key]:
+                                value = row[key]
+                                break
+                        
+                        if value is None:
+                            results.append({
+                                "row": i + 1,
+                                "success": False,
+                                "error": f"Missing required field: {possible_keys[0]}",
+                            })
+                            continue
+                        
+                        mapped_row[expected_field] = value
+                    
+                    # Map optional fields
+                    optional_mappings = {
+                        "balance": ["Balance", "balance"],
+                        "paid_date": ["Paid Date", "paid_date"],
+                        "notes": ["Notes", "notes"],
+                        "invoice_subject": ["Invoice Subject", "invoice_subject"],
+                        "house_number": ["House No.", "house_number", "House Number"],
+                        "project_id": ["Project ID", "project_id"],
+                        "client_phone": ["Client Phone", "client_phone"],
+                        "invoice_id": ["Invoice ID", "invoice_id"],
+                        "invoice_number": ["Invoice Number", "invoice_number"],
+                        "client_id_or_phone": ["Client ID or Phone", "client_id_or_phone"],
+                    }
+                    
+                    for expected_field, possible_keys in optional_mappings.items():
+                        for key in possible_keys:
+                            if key in row:
+                                mapped_row[expected_field] = row[key]
+                                break
+                    
+                    # Validate client_type field (handle both cases)
+                    client_type = mapped_row["client_type"].strip()
+                    if client_type.lower() not in ["owner", "tenant", "vendor"]:
+                        results.append({
+                            "row": i + 1,
+                            "success": False,
+                            "error": f"Client Type must be 'Owner', 'Tenant', or 'Vendor' (case insensitive)",
+                        })
+                        continue
+                    
+                    # Normalize client_type to lowercase
+                    mapped_row["client_type"] = client_type.lower()
+                    
+                    # Find customer by name
+                    customer_name = mapped_row.get("customer_name", "").strip()
+                    if not customer_name:
+                        results.append({
+                            "row": i + 1,
+                            "success": False,
+                            "error": "Customer name is required",
+                        })
+                        continue
+                    
+                    # Find user by name (first_name + last_name or full name)
+                    user = None
+                    if " " in customer_name:
+                        name_parts = customer_name.split(" ", 1)
+                        user = Users.objects.filter(
+                            first_name__iexact=name_parts[0].strip(),
+                            last_name__iexact=name_parts[1].strip(),
+                            is_active=True
+                        ).first()
+                    else:
+                        # Try to find by first name only
+                        user = Users.objects.filter(
+                            first_name__iexact=customer_name,
+                            is_active=True
+                        ).first()
+                    
+                    if not user:
+                        results.append({
+                            "row": i + 1,
+                            "success": False,
+                            "error": f"Customer '{customer_name}' not found",
+                        })
+                        continue
+                    
+                    # Find property by house number and project
+                    property_node = None
+                    house_number = mapped_row.get("house_number", "").strip()
+                    project_id = mapped_row.get("project_id", "").strip()
+                    
+                    if house_number and project_id:
+                        # Find project first
+                        project_node = LocationNode.objects.filter(
+                            name__icontains=project_id.split()[0],  # Get first part of project ID
+                            node_type="PROJECT",
+                            is_deleted=False
+                        ).first()
+                        
+                        if project_node:
+                            # Find unit/apartment within project
+                            property_node = LocationNode.objects.filter(
+                                name__iexact=house_number,
+                                node_type="UNIT",
+                                parent__parent__parent=project_node,
+                                is_deleted=False
+                            ).first()
+                    
+                    if not property_node:
+                        # Use a default property or create a placeholder
+                        # For now, we'll skip property assignment
+                        print(f"⚠️ Backend: Property not found for {house_number} in {project_id}")
+                    
+                    # Parse dates
+                    from datetime import datetime
+                    try:
+                        invoice_date = datetime.strptime(mapped_row["invoice_date"], "%Y-%m-%d").date()
+                        due_date = datetime.strptime(mapped_row["due_date"], "%Y-%m-%d").date()
+                    except ValueError:
+                        results.append({
+                            "row": i + 1,
+                            "success": False,
+                            "error": "Invalid date format. Use YYYY-MM-DD",
+                        })
+                        continue
+                    
+                    # Parse amounts
+                    try:
+                        total_amount = float(mapped_row["total_amount"]) if mapped_row["total_amount"] else 0
+                        balance = float(mapped_row.get("balance", mapped_row["total_amount"])) if mapped_row.get("balance") else total_amount
+                    except (ValueError, TypeError):
+                        results.append({
+                            "row": i + 1,
+                            "success": False,
+                            "error": "Invalid amount format",
+                        })
+                        continue
+                    
+                    # Determine invoice status based on paid date
+                    invoice_status = "ISSUED"
+                    if mapped_row.get("paid_date") and str(mapped_row.get("paid_date")) != "0":
+                        invoice_status = "PAID"
+                    elif balance < total_amount:
+                        invoice_status = "PARTIAL"
+                    
+                    # Create invoice
+                    invoice = Invoice.objects.create(
+                        property=property_node if property_node else LocationNode.objects.filter(node_type="PROJECT").first(),
+                        issue_date=invoice_date,
+                        due_date=due_date,
+                        status=invoice_status,
+                        total_amount=total_amount,
+                        balance=balance,
+                        description=mapped_row.get("notes", ""),
+                        tax_percentage=0,
+                        discount=0,
+                    )
+                    
+                    # Create invoice item
+                    InvoiceItem.objects.create(
+                        invoice=invoice,
+                        type=mapped_row.get("invoice_type", "SERVICE_CHARGE"),
+                        name=mapped_row.get("invoice_subject", mapped_row.get("invoice_type", "Service charge")),
+                        amount=total_amount,
+                        quantity=1,
+                        price=total_amount,
+                    )
+                    
+                    # Add tenants/owners to invoice based on client type
+                    if mapped_row["client_type"] == "tenant":
+                        # Find PropertyTenant for this user and property
+                        property_tenant = PropertyTenant.objects.filter(
+                            tenant_user=user,
+                            node=property_node,
+                            is_deleted=False
+                        ).first()
+                        if property_tenant:
+                            invoice.tenants.add(property_tenant)
+                    elif mapped_row["client_type"] == "owner":
+                        # Find PropertyOwner for this user and property
+                        property_owner = PropertyOwner.objects.filter(
+                            owner_user=user,
+                            node=property_node,
+                            is_deleted=False
+                        ).first()
+                        if property_owner:
+                            invoice.owners.add(property_owner)
+                    
+                    results.append({
+                        "row": i + 1,
+                        "success": True,
+                        "data": {
+                            "id": str(invoice.id),
+                            "invoice_number": invoice.invoice_number,
+                            "customer_name": customer_name,
+                            "total_amount": total_amount,
+                            "status": invoice_status,
+                            "invoice_date": invoice_date.isoformat(),
+                            "due_date": due_date.isoformat(),
+                        },
+                    })
+                    created_count += 1
+                    print(f"✅ Backend: Invoice created successfully: {invoice.invoice_number}")
+
+                except Exception as e:
+                    print(f"❌ Backend: Error processing invoice row {i + 1}: {str(e)}")
+                    results.append({
+                        "row": i + 1,
+                        "success": False,
+                        "error": str(e),
+                    })
+
+        print(f"🚀 Backend: Bulk invoice upload completed. Created: {created_count}, Total rows: {len(request.data)}")
+        
+        return Response(
+            {
+                "error": False,
+                "message": f"Bulk upload completed. {created_count} invoices created successfully.",
+                "data": {
+                    "count": created_count,
+                    "total_rows": len(request.data),
+                    "results": results,
+                },
+            },
+            status=status.HTTP_201_CREATED,
+        )

@@ -135,8 +135,8 @@ export async function fetchAvailabilityMatrix(
       queryParams.append("to_date", requestData.to_date);
     }
 
-    // Make API request to our new availability endpoint
-    const url = `${API_BASE_URL}/sales/availability/${
+    // Make API request to projects endpoint
+    const url = `${API_BASE_URL}/projects/${
       queryParams.toString() ? `?${queryParams.toString()}` : ""
     }`;
 
@@ -199,7 +199,7 @@ export async function fetchProjects(): Promise<{
       };
     }
 
-    const response = await fetch(`${API_BASE_URL}/sales/availability/`, {
+    const response = await fetch(`${API_BASE_URL}/projects/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${session.accessToken}`,

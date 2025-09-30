@@ -47,7 +47,6 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "192.168.100.243",
     "::1",
     "hoyhub.net",
     "www.hoyhub.net",
@@ -62,7 +61,6 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://192.168.100.243:3000",
     "http://hoyhub.net",
     "https://hoyhub.net",
     "https://www.hoyhub.net",

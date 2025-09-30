@@ -320,7 +320,18 @@ class InvoiceTableItemSerializer(serializers.Serializer):
         return obj.tax_percentage
 
     def get_balance(self, obj):
-        return format_money_with_currency(obj.balance)
+        # Calculate total amount including tax and discount
+        total_amount = float(obj.total_amount)
+        tax_percentage = float(obj.tax_percentage) if obj.tax_percentage else 0
+        discount_amount = float(obj.discount) if obj.discount else 0
+
+        # Calculate tax amount
+        tax_amount = total_amount * (tax_percentage / 100)
+
+        # Calculate final balance: total + tax - discount
+        balance = total_amount + tax_amount - discount_amount
+
+        return format_money_with_currency(balance)
 
     def get_total(self, obj):
         return format_money_with_currency(obj.total_amount)

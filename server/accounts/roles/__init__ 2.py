@@ -1,1 +1,0 @@
-# Roles package for managing Django groups and permissions 

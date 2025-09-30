@@ -5,6 +5,7 @@ from .clients import (
     AgencyListView,
     AgencyRetrieveView,
     AgencyUpdateView,
+    BulkClientUploadView,
     OwnerCreateView,
     OwnerIncomeDetailView,
     OwnerInvoicesView,
@@ -17,6 +18,7 @@ from .clients import (
     ProjectOwnersReadView,
     PropertyOwnershipDeleteView,
     TenantCreateView,
+    TenantDeleteView,
     TenantListView,
     TenantRetrieveView,
     TenantUpdateView,
@@ -30,6 +32,7 @@ from .projects import (
     ProjectOverviewView,
 )
 from .structure import (
+    ApartmentCheckView,
     ApartmentCreateView,
     ApartmentEditView,
     BasementCreateView,
@@ -46,10 +49,8 @@ from .structure import (
 )
 from .tenant import (
     AssignTenantToUnitView,
-    OwnerOverviewView,
     PropertyAssignmentDetailView,
     PropertyAssignmentListView,
-    PropertyDetailsView,
     PropertyStatsView,
     PropertyTenantDeleteView,
     PropertyTenantDetailView,
@@ -167,12 +168,6 @@ urlpatterns = [
         PropertyStatsView.as_view(),
         name="property-stats",
     ),
-    # Property details route
-    path(
-        "properties/<uuid:node_id>/details",
-        PropertyDetailsView.as_view(),
-        name="property-details",
-    ),
     # Owner routes
     path("owners", OwnerListView.as_view(), name="owner-list"),
     path("owners/create", OwnerCreateView.as_view(), name="owner-create"),
@@ -286,6 +281,13 @@ urlpatterns = [
         BulkStructureUploadView.as_view(),
         name="bulk-structure-upload",
     ),
+    # Apartment check
+    # Apartment check
+    path(
+        "apartments/check",
+        ApartmentCheckView.as_view(),
+        name="apartment-check",
+    ),
     # ========================================
     # OWNER ROUTES
     # ========================================
@@ -308,11 +310,6 @@ urlpatterns = [
         OwnerInvoicesView.as_view(),
         name="owner-invoices",
     ),
-    path(
-        "owners/<uuid:pk>/overview",
-        OwnerOverviewView.as_view(),
-        name="owner-overview",
-    ),
     
     
     # ========================================
@@ -322,6 +319,12 @@ urlpatterns = [
     path("tenants/create", TenantCreateView.as_view(), name="tenant-create"),
     path("tenants/<uuid:pk>", TenantRetrieveView.as_view(), name="tenant-detail"),
     path("tenants/<uuid:pk>/update", TenantUpdateView.as_view(), name="tenant-update"),
+    path("tenants/<uuid:pk>/delete", TenantDeleteView.as_view(), name="tenant-delete"),
+    
+    # ========================================
+    # BULK CLIENT UPLOAD ROUTES
+    # ========================================
+    path("clients/bulk-upload", BulkClientUploadView.as_view(), name="bulk-client-upload"),
     # Tenant verification
     path("tenants/verify", TenantVerificationView.as_view(), name="tenant-verify"),
     path(

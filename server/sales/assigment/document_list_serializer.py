@@ -122,54 +122,13 @@ class OfferLetterSerializer(serializers.ModelSerializer):
             return obj.get(key)
         return getattr(obj, key, None)
 
-    def _get_document_link(self, obj):
-        """Get document link - prefer document_file URL, fallback to legacy document_link"""
+    def get_documentLink(self, obj):
+        """Prefer document_file URL; fallback to legacy document_link"""
         file_val = self._get_value(obj, "document_file")
-
-        # If document_file exists, try to get URL
-        if file_val:
-            # Case 1: FileField object with .url attribute
-            if hasattr(file_val, "url"):
-                return file_val.url
-
-            # Case 2: String path from JSONObject annotation
-            if isinstance(file_val, str) and file_val.strip():
-                # Construct URL from the file path
-                from django.conf import settings
-                import os
-
-                # Get the base media URL
-                media_url = getattr(settings, "MEDIA_URL", "/media/")
-
-                # Clean the path and construct full URL
-                clean_path = file_val.strip()
-                if clean_path.startswith("/"):
-                    clean_path = clean_path[1:]
-
-                # Return the full URL
-                return f"{media_url}{clean_path}"
-
-        # Case 3: Try to get document_file from the actual model instance
-        # This happens when JSONObject doesn't include document_file
-        if hasattr(obj, "get") and isinstance(obj, dict):
-            doc_id = obj.get("id")
-            if doc_id:
-                try:
-                    from sales.models import AssignedDocument
-
-                    doc = AssignedDocument.objects.get(id=doc_id)
-                    if doc.document_file:
-                        return doc.document_file.url
-                except AssignedDocument.DoesNotExist:
-                    pass
-
-        # Fallback to legacy document_link
+        if hasattr(file_val, "url"):
+            return file_val.url
         link_val = self._get_value(obj, "document_link")
         return link_val or "#"
-
-    def get_documentLink(self, obj):
-        """Get document link for offer letters"""
-        return self._get_document_link(obj)
 
     def get_status(self, obj):
         """Map offer status to display value (dict or instance)."""
@@ -198,54 +157,13 @@ class AgreementSerializer(serializers.ModelSerializer):
             return obj.get(key)
         return getattr(obj, key, None)
 
-    def _get_document_link(self, obj):
-        """Get document link - prefer document_file URL, fallback to legacy document_link"""
+    def get_documentLink(self, obj):
+        """Prefer document_file URL; fallback to legacy document_link"""
         file_val = self._get_value(obj, "document_file")
-
-        # If document_file exists, try to get URL
-        if file_val:
-            # Case 1: FileField object with .url attribute
-            if hasattr(file_val, "url"):
-                return file_val.url
-
-            # Case 2: String path from JSONObject annotation
-            if isinstance(file_val, str) and file_val.strip():
-                # Construct URL from the file path
-                from django.conf import settings
-                import os
-
-                # Get the base media URL
-                media_url = getattr(settings, "MEDIA_URL", "/media/")
-
-                # Clean the path and construct full URL
-                clean_path = file_val.strip()
-                if clean_path.startswith("/"):
-                    clean_path = clean_path[1:]
-
-                # Return the full URL
-                return f"{media_url}{clean_path}"
-
-        # Case 3: Try to get document_file from the actual model instance
-        # This happens when JSONObject doesn't include document_file
-        if hasattr(obj, "get") and isinstance(obj, dict):
-            doc_id = obj.get("id")
-            if doc_id:
-                try:
-                    from sales.models import AssignedDocument
-
-                    doc = AssignedDocument.objects.get(id=doc_id)
-                    if doc.document_file:
-                        return doc.document_file.url
-                except AssignedDocument.DoesNotExist:
-                    pass
-
-        # Fallback to legacy document_link
+        if hasattr(file_val, "url"):
+            return file_val.url
         link_val = self._get_value(obj, "document_link")
         return link_val or "#"
-
-    def get_documentLink(self, obj):
-        """Get document link for agreements"""
-        return self._get_document_link(obj)
 
     def get_status(self, obj):
         """Map agreement status to display value (dict or instance)."""

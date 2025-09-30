@@ -468,4 +468,160 @@ export const updateVerificationStatus = async (
   }
 };
 
+// --- BULK UPLOAD CLIENTS ---
+export interface BulkClientUploadData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  gender: string;
+  status: string;
+  type: string;
+  project_name: string;
+  house_number: string;
+}
+
+export interface BulkClientUploadResponse {
+  error: boolean;
+  message?: string;
+  data?: {
+    count: number;
+    results: Array<{
+      type: string;
+      success: boolean;
+      data?: any;
+      error?: string;
+    }>;
+  };
+}
+
+export const deleteTenantWithValidation = async (tenantId: string): Promise<ApiResponse> => {
+  try {
+    const session = await getServerSession(authOptions);
+    const token = session?.accessToken;
+    
+    if (!token) {
+      return {
+        isError: true,
+        message: "Authentication required",
+      };
+    }
+
+    const apiUrl = `${API_BASE_URL}/projects/tenants/${tenantId}/delete`;
+    
+    const response = await fetch(apiUrl, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Failed to delete tenant";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        errorMessage = response.statusText || errorMessage;
+      }
+
+      return {
+        isError: true,
+        message: errorMessage,
+      };
+    }
+
+    const responseData = await response.json();
+    return {
+      isError: false,
+      message: responseData.message || "Tenant deleted successfully",
+    };
+  } catch (error) {
+    console.error('Delete tenant error:', error);
+    return {
+      isError: true,
+      message: "Failed to delete tenant",
+    };
+  }
+};
+
+export const bulkUploadClients = async (
+  data: BulkClientUploadData[]
+): Promise<BulkClientUploadResponse> => {
+  try {
+    const session = await getServerSession(authOptions);
+    const token = session?.accessToken;
+    
+    if (!token) {
+      return {
+        error: true,
+        message: "Authentication required",
+        data: {
+          count: 0,
+          results: [],
+        },
+      };
+    }
+
+    console.log('🚀 Frontend: Starting bulk client upload');
+    console.log('🚀 Frontend: Data to send:', data);
+    console.log('🚀 Frontend: Data length:', data.length);
+    console.log('🚀 Frontend: API_BASE_URL:', API_BASE_URL);
+    console.log('🚀 Frontend: Token exists:', !!token);
+    
+    const apiUrl = `${API_BASE_URL}/projects/clients/bulk-upload`;
+    console.log('🚀 Frontend: Full API URL:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      // Try to get error message from response
+      let errorMessage = "Failed to bulk upload clients";
+      console.log('❌ Frontend: Response not OK, status:', response.status);
+      console.log('❌ Frontend: Response statusText:', response.statusText);
+      
+      try {
+        const errorData = await response.json();
+        console.log('❌ Frontend: Error data:', errorData);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        console.log('❌ Frontend: Failed to parse error response:', parseError);
+        // If parsing fails, use status text
+        errorMessage = response.statusText || errorMessage;
+      }
+
+      return {
+        error: true,
+        message: errorMessage,
+        data: {
+          count: 0,
+          results: [],
+        },
+      };
+    }
+
+    const responseData = await response.json();
+    console.log('✅ Frontend: Success response:', responseData);
+    return responseData;
+  } catch (error) {
+    console.error('Bulk upload error:', error);
+    return {
+      error: true,
+      message: "Failed to upload clients",
+      data: {
+        count: 0,
+        results: [],
+      },
+    };
+  }
+};
+
 

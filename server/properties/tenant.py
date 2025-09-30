@@ -1,4 +1,7 @@
-from datetime import datetime, date
+import datetime
+import json
+
+from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.core.files.base import ContentFile
@@ -17,14 +20,14 @@ from rest_framework.generics import (
     UpdateAPIView,
 )
 from rest_framework.parsers import JSONParser, MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from weasyprint import HTML
 
 from accounts.models import Users, UserVerification
-from documents.models import ContractTemplate, TenantAgreement
-from payments.models import Invoice, Penalty, Receipt, Payout, Expense
+from documents.models import ContractTemplate, TemplateVariable, TenantAgreement
+from payments.models import Invoice, Penalty, Receipt
 from properties.models import (
     LocationNode,
     Media,
@@ -32,14 +35,12 @@ from properties.models import (
     PropertyOwner,
     PropertyTenant,
     UnitDetail,
-    MaintenanceRequest,
 )
 from utils.format import format_money_with_currency
 from utils.serilaizer import flatten_errors
 
 from .serializers.tenant import (
     PropertyAssignmentDetailSerializer,
-    PropertyDetailsSerializer,
     PropertyStatsSerializer,
     PropertyTenantListSerializer,
     PropertyTenantSerializer,
@@ -591,11 +592,13 @@ class PropertyTenantCreateView(CreateAPIView):
                 floor = LocationNode.objects.get(
                     id=floor, node_type="FLOOR", parent=block, is_deleted=False
                 )
+                print("floor", floor)
 
                 # Validate apartment belongs to floor
                 apartment = LocationNode.objects.get(
                     id=apartment, node_type="UNIT", parent=floor, is_deleted=False
                 )
+                print("apartment", apartment)
 
             elif structure_type == "HOUSE":
                 house = request.data.get("house")
@@ -951,82 +954,6 @@ class PropertyTenantDeleteView(DestroyAPIView):
                 "data": None,
             },
             status=status.HTTP_204_NO_CONTENT,
-        )
-
-
-@extend_schema(
-    tags=["PropertyTenant"],
-    summary="Vacate a tenant from a unit (soft delete)",
-    responses={
-        200: "Tenant vacated successfully.",
-        400: "Validation error.",
-        404: "Not found.",
-    },
-)
-@method_decorator(
-    ratelimit(key="ip", rate="10/m", method="POST", block=True), name="dispatch"
-)
-class VacateTenantView(APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    def post(self, request, assignment_id):
-        """
-        Vacate a tenant from a unit by setting is_deleted=True
-        This is a soft delete operation that marks the tenant as vacated
-        """
-        if not assignment_id:
-            return Response(
-                {
-                    "error": True,
-                    "message": "assignment_id is required.",
-                    "data": None,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            property_tenant = PropertyTenant.objects.get(
-                id=assignment_id, is_deleted=False
-            )
-        except PropertyTenant.DoesNotExist:
-            return Response(
-                {
-                    "error": True,
-                    "message": "Property tenant assignment not found.",
-                    "data": None,
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Mark tenant as vacated (soft delete)
-        property_tenant.is_deleted = True
-        property_tenant.save(update_fields=["is_deleted"])
-
-        # If the node is a UNIT, set its UnitDetail.status to 'available'
-        if property_tenant.node.node_type == "UNIT":
-            try:
-                unit_detail = UnitDetail.objects.get(node=property_tenant.node)
-                unit_detail.status = "available"
-                unit_detail.save(update_fields=["status"])
-            except UnitDetail.DoesNotExist:
-                pass
-
-        # Clear cache (commented out as in the original)
-        # clear_redis_cache("tenants-list:*")
-        # clear_redis_cache(f"property-tenant-{property_tenant.node.id}:*")
-
-        return Response(
-            {
-                "error": False,
-                "message": "Tenant vacated successfully.",
-                "data": {
-                    "assignment_id": assignment_id,
-                    "vacated_at": property_tenant.updated_at.isoformat(),
-                    "unit_status": "available" if property_tenant.node.node_type == "UNIT" else None
-                },
-            },
-            status=status.HTTP_200_OK,
         )
 
 
@@ -1657,7 +1584,7 @@ class PropertyAssignmentDetailView(RetrieveAPIView):
 
 @extend_schema(
     tags=["PropertyAssignment"],
-    summary="List all property assignments with detailed node information, financial data, owner and agent info",
+    summary="List all property assignments with detailed node information",
     responses={200: PropertyAssignmentDetailSerializer(many=True)},
 )
 @method_decorator(
@@ -1699,52 +1626,13 @@ class PropertyAssignmentListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
         tenant_id = request.query_params.get("tenant_id")
+        # cache_key = f"property-assignments:{project_id or 'all'}:{tenant_id or 'all'}"
+        # cached = cache.get(cache_key)
+        # if cached:
+        #     return Response(cached, status=status.HTTP_200_OK)
 
         queryset = self.get_queryset()
-
-        # Get enhanced data if tenant_id is provided
-        if tenant_id:
-            try:
-                # Get payment data for total amount spent and last payment
-                payments = Receipt.objects.filter(
-                    invoice__tenants__tenant_user_id=tenant_id, is_deleted=False
-                ).order_by("-payment_date")
-
-                # Calculate total amount spent
-                total_amount_spent = sum(
-                    float(payment.paid_amount)
-                    for payment in payments
-                    if payment.invoice and payment.invoice.status == "PAID"
-                )
-
-                # Get last payment
-                last_paid = payments.filter(invoice__status="PAID").first()
-
-                # Store enhanced data in request for serializer to access
-                request.enhanced_data = {
-                    "total_amount_spent": total_amount_spent,
-                    "last_payment": {
-                        "amount": float(last_paid.paid_amount) if last_paid else 0,
-                        "currency": "USD",
-                        "date": last_paid.payment_date.isoformat()
-                        if last_paid
-                        else None,
-                        "status": last_paid.invoice.status
-                        if last_paid and last_paid.invoice
-                        else None,
-                    }
-                    if last_paid
-                    else None,
-                }
-
-            except Exception as e:
-                print(f"Error getting enhanced data: {e}")
-                # Continue without enhanced data
-
-        serializer = self.get_serializer(
-            queryset, many=True, context={"request": request}
-        )
-
+        serializer = self.get_serializer(queryset, many=True)
         response_data = {
             "error": False,
             "data": {
@@ -1752,7 +1640,7 @@ class PropertyAssignmentListView(ListAPIView):
                 "results": serializer.data,
             },
         }
-
+        # cache.set(cache_key, response_data, timeout=60)
         return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -1783,7 +1671,6 @@ class TenantPropertyAssignmentListView(ListAPIView):
             )
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
-        print(f"🔍 DEBUG: Response data = {serializer.data}")
         return Response(
             {
                 "error": False,
@@ -1959,392 +1846,121 @@ class TenantFinanceSummaryView(APIView):
 
 
 @extend_schema(
-    tags=["PropertyDetails"],
-    summary="Get detailed property information for a specific node (unit or house).",
-    responses={200: PropertyDetailsSerializer},
+    tags=["PropertyTenant"],
+    summary="Vacate a tenant from a property",
+    responses={
+        200: "Tenant successfully vacated",
+        400: "Invalid request or tenant not found",
+        404: "Tenant assignment not found",
+    },
 )
 @method_decorator(
-    ratelimit(key="ip", rate="20/m", method="GET", block=True), name="dispatch"
+    ratelimit(key="ip", rate="10/m", method="POST", block=True), name="dispatch"
 )
-class PropertyDetailsView(RetrieveAPIView):
-    serializer_class = PropertyDetailsSerializer
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-    lookup_url_kwarg = "node_id"
+class VacateTenantView(APIView):
+    """
+    Vacate a tenant from a property by setting contract_end to current date.
+    This effectively ends the tenancy while preserving historical data.
+    """
 
-    def get(self, request, *args, **kwargs):
-        node_id = kwargs.get("node_id")
-        if not node_id:
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        assignment_id = kwargs.get("assignment_id")
+        if not assignment_id:
             return Response(
                 {
                     "error": True,
-                    "message": "node_id is required.",
+                    "message": "assignment_id is required.",
                     "data": None,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         try:
-            node = LocationNode.objects.get(id=node_id, is_deleted=False)
-        except LocationNode.DoesNotExist:
+            # Get the tenant assignment
+            tenant_assignment = PropertyTenant.objects.get(
+                id=assignment_id, is_deleted=False
+            )
+        except PropertyTenant.DoesNotExist:
             return Response(
                 {
                     "error": True,
-                    "message": "Property node not found.",
+                    "message": "Tenant assignment not found",
                     "data": None,
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = self.get_serializer(node)
-        return Response(
-            {
-                "error": False,
-                "data": {
-                    "count": 0,
-                    "results": serializer.data,
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-@extend_schema(
-    tags=["OwnerOverview"],
-    summary="Get comprehensive owner overview dashboard data including profile, stats, properties, financials, recent activity, and pending items.",
-    responses={200: "Owner overview dashboard data."},
-)
-@method_decorator(
-    ratelimit(key="ip", rate="20/m", method="GET", block=True), name="dispatch"
-)
-class OwnerOverviewView(APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    def get(self, request, *args, **kwargs):
-        owner_id = kwargs.get("pk") or request.query_params.get("owner_id")
-        if not owner_id:
+        # Check if tenant is already vacated
+        if (
+            tenant_assignment.contract_end
+            and tenant_assignment.contract_end <= date.today()
+        ):
             return Response(
                 {
                     "error": True,
-                    "message": "owner_id is required.",
+                    "message": f"Tenant is already vacated. Contract ended on {tenant_assignment.contract_end.strftime('%B %d, %Y')}",
                     "data": None,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+        # Check if contract is expiring soon (within 30 days)
+        today = date.today()
+        if tenant_assignment.contract_end:
+            days_until_expiry = (tenant_assignment.contract_end - today).days
+            if days_until_expiry <= 30 and days_until_expiry > 0:
+                expiry_warning = f" Contract expires in {days_until_expiry} days on {tenant_assignment.contract_end.strftime('%B %d, %Y')}."
+            elif days_until_expiry <= 0:
+                expiry_warning = f" Contract expired on {tenant_assignment.contract_end.strftime('%B %d, %Y')}."
+            else:
+                expiry_warning = f" Contract expires on {tenant_assignment.contract_end.strftime('%B %d, %Y')}."
+        else:
+            expiry_warning = " Contract has no end date (ongoing)."
 
         try:
-            owner = Users.objects.get(id=owner_id, type="owner")
-        except Users.DoesNotExist:
+            with transaction.atomic():
+                # Set contract end to today
+                tenant_assignment.contract_end = date.today()
+                tenant_assignment.save()
+
+                # If UNIT, set its UnitDetail.status to 'available'
+                if (
+                    tenant_assignment.node
+                    and tenant_assignment.node.node_type == "UNIT"
+                ):
+                    try:
+                        unit_detail = UnitDetail.objects.get(
+                            node=tenant_assignment.node
+                        )
+                        unit_detail.status = "available"
+                        unit_detail.save(update_fields=["status"])
+                    except UnitDetail.DoesNotExist:
+                        pass
+
+                return Response(
+                    {
+                        "error": False,
+                        "message": f"Tenant {tenant_assignment.tenant_user.get_full_name()} successfully vacated from {tenant_assignment.node.name}.{expiry_warning} Contract ended on {date.today().strftime('%B %d, %Y')}",
+                        "data": {
+                            "tenant_name": tenant_assignment.tenant_user.get_full_name(),
+                            "property_name": tenant_assignment.node.name,
+                            "vacated_date": date.today().isoformat(),
+                            "assignment_id": str(tenant_assignment.id),
+                            "contract_start": tenant_assignment.contract_start.isoformat(),
+                            "contract_end": tenant_assignment.contract_end.isoformat(),
+                            "expiry_warning": expiry_warning
+                        },
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+        except Exception as e:
             return Response(
                 {
                     "error": True,
-                    "message": "Owner not found.",
+                    "message": f"Failed to vacate tenant: {str(e)}",
                     "data": None,
                 },
-                status=status.HTTP_404_NOT_FOUND,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-        # Get all properties owned by this owner
-        owned_properties = PropertyOwner.objects.filter(
-            owner_user=owner, is_deleted=False
-        ).select_related("node")
-        
-        property_nodes = [po.node for po in owned_properties]
-        
-        # 1. OWNER PROFILE SECTION
-        owner_profile = {
-            "id": str(owner.id),
-            "email": owner.email,
-            "first_name": owner.first_name,
-            "last_name": owner.last_name,
-            "phone": owner.phone,
-            "gender": owner.gender,
-            "is_active": owner.is_active,
-            "is_owner_verified": owner.is_owner_verified,
-            "created_at": owner.created_at.isoformat() if owner.created_at else None,
-            "modified_at": owner.modified_at.isoformat() if owner.modified_at else None,
-        }
-
-        # 2. QUICK STATS SECTION
-        now = datetime.now()
-        current_month = now.month
-        current_year = now.year
-        
-        # Total properties count
-        total_properties = len(property_nodes)
-        
-        # Occupancy rate
-        occupied_properties = PropertyTenant.objects.filter(
-            node__in=property_nodes,
-            contract_start__lte=now.date(),
-            contract_end__gte=now.date(),
-            is_deleted=False,
-        ).count()
-        
-        occupancy_rate = (
-            (occupied_properties / total_properties) * 100 if total_properties > 0 else 0
-        )
-        
-        # Financial stats
-        total_income = Payout.objects.filter(
-            owner=owner, status="completed", year=current_year
-        ).aggregate(total=Sum("net_amount"))["total"] or Decimal("0")
-        
-        pending_invoices = Invoice.objects.filter(
-            owners__owner_user=owner,
-            status__in=["ISSUED", "OVERDUE", "PARTIAL"],
-            is_deleted=False,
-        ).aggregate(total=Sum("total_amount"))["total"] or Decimal("0")
-        
-        total_outstanding = Payout.objects.filter(
-            owner=owner, status="pending", month=current_month, year=current_year
-        ).aggregate(total=Sum("net_amount"))["total"] or Decimal("0")
-        
-        # 3. PROPERTIES OVERVIEW SECTION
-        properties_overview = []
-        for po in owned_properties:
-            node = po.node
-            try:
-                # Get current tenant if any
-                current_tenant = PropertyTenant.objects.filter(
-                    node=node, is_deleted=False
-                ).first()
-                
-                # Get maintenance requests
-                maintenance_requests = MaintenanceRequest.objects.filter(
-                    node=node, is_deleted=False
-                ).order_by("-created_at")[:3]  # Last 3 requests
-                
-                # Get recent expenses
-                recent_expenses = Expense.objects.filter(
-                    location_node=node, is_deleted=False
-                ).order_by("-created_at")[:3]  # Last 3 expenses
-                
-                property_data = {
-                    "id": str(node.id),
-                    "name": node.name,
-                    "node_type": node.node_type,
-                    "property_type": node.property_type,
-                    "parent": {
-                        "id": str(node.parent.id),
-                        "name": node.parent.name,
-                        "node_type": node.parent.node_type,
-                    } if node.parent else None,
-                    "current_tenant": {
-                        "id": str(current_tenant.tenant_user.id),
-                        "name": current_tenant.tenant_user.get_full_name(),
-                        "email": current_tenant.tenant_user.email,
-                        "phone": current_tenant.tenant_user.phone,
-                        "contract_start": current_tenant.contract_start.isoformat(),
-                        "contract_end": current_tenant.contract_end.isoformat() if current_tenant.contract_end else None,
-                        "rent_amount": str(current_tenant.rent_amount),
-                        "currency": current_tenant.currency.code if current_tenant.currency else "KES",
-                    } if current_tenant else None,
-                    "maintenance_requests": [
-                        {
-                            "id": str(mr.id),
-                            "title": mr.title,
-                            "description": mr.description,
-                            "status": mr.status,
-                            "priority": mr.priority,
-                            "created_at": mr.created_at.isoformat(),
-                        } for mr in maintenance_requests
-                    ],
-                    "recent_expenses": [
-                        {
-                            "id": str(exp.id),
-                            "description": exp.description,
-                            "amount": str(exp.total_amount),
-                            "status": exp.status,
-                            "due_date": exp.due_date.isoformat(),
-                            "paid_date": exp.paid_date.isoformat() if exp.paid_date else None,
-                        } for exp in recent_expenses
-                    ],
-                }
-                properties_overview.append(property_data)
-            except Exception as e:
-                print(f"Error processing property {node.id}: {e}")
-                continue
-
-        # 4. FINANCIAL OVERVIEW SECTION
-        # Recent payouts
-        recent_payouts = Payout.objects.filter(
-            owner=owner, is_deleted=False
-        ).order_by("-created_at")[:5]
-        
-        financial_overview = {
-            "total_income": format_money_with_currency(total_income),
-            "pending_invoices": format_money_with_currency(pending_invoices),
-            "total_outstanding": format_money_with_currency(total_outstanding),
-            "recent_payouts": [
-                {
-                    "id": str(payout.id),
-                    "payout_number": payout.payout_number,
-                    "amount": str(payout.net_amount),
-                    "status": payout.status,
-                    "month": payout.month,
-                    "year": payout.year,
-                    "payout_date": payout.payout_date.isoformat() if payout.payout_date else None,
-                    "rent_collected": str(payout.rent_collected),
-                    "services_expenses": str(payout.services_expenses),
-                } for payout in recent_payouts
-            ],
-        }
-
-        # 5. RECENT ACTIVITY SECTION
-        recent_activity = []
-        
-        # Recent invoices
-        recent_invoices = Invoice.objects.filter(
-            owners__owner_user=owner, is_deleted=False
-        ).order_by("-created_at")[:5]
-        
-        for invoice in recent_invoices:
-            recent_activity.append({
-                "type": "invoice",
-                "id": str(invoice.id),
-                "title": f"Invoice #{invoice.invoice_number}",
-                "description": f"Amount: {format_money_with_currency(invoice.total_amount)}",
-                "status": invoice.status,
-                "date": invoice.issue_date.isoformat(),
-                "amount": str(invoice.total_amount),
-            })
-        
-        # Recent maintenance requests
-        all_maintenance = MaintenanceRequest.objects.filter(
-            node__in=property_nodes, is_deleted=False
-        ).order_by("-created_at")[:5]
-        
-        for mr in all_maintenance:
-            recent_activity.append({
-                "type": "maintenance",
-                "id": str(mr.id),
-                "title": mr.title,
-                "description": mr.description[:100] + "..." if len(mr.description) > 100 else mr.description,
-                "status": mr.status,
-                "priority": mr.priority,
-                "date": mr.created_at.isoformat(),
-            })
-        
-        # Recent expenses
-        all_expenses = Expense.objects.filter(
-            location_node__in=property_nodes, is_deleted=False
-        ).order_by("-created_at")[:5]
-        
-        for exp in all_expenses:
-            recent_activity.append({
-                "type": "expense",
-                "id": str(exp.id),
-                "title": f"Expense: {exp.description[:50]}...",
-                "description": f"Amount: {format_money_with_currency(exp.total_amount)}",
-                "status": exp.status,
-                "date": exp.created_at.isoformat(),
-                "amount": str(exp.total_amount),
-            })
-        
-        # Sort by date (most recent first)
-        recent_activity.sort(key=lambda x: x["date"], reverse=True)
-        recent_activity = recent_activity[:10]  # Top 10 most recent
-
-        # 6. PENDING ITEMS SECTION
-        pending_items = []
-        
-        # Pending invoices
-        pending_invoices_list = Invoice.objects.filter(
-            owners__owner_user=owner,
-            status__in=["ISSUED", "OVERDUE", "PARTIAL"],
-            is_deleted=False,
-        ).order_by("due_date")[:5]
-        
-        for invoice in pending_invoices_list:
-            pending_items.append({
-                "type": "invoice",
-                "id": str(invoice.id),
-                "title": f"Pending Invoice #{invoice.invoice_number}",
-                "description": f"Due: {invoice.due_date.strftime('%Y-%m-%d')}",
-                "status": invoice.status,
-                "amount": str(invoice.total_amount),
-                "due_date": invoice.due_date.isoformat(),
-            })
-        
-        # Pending maintenance requests
-        pending_maintenance = MaintenanceRequest.objects.filter(
-            node__in=property_nodes,
-            status__in=["open", "in_progress"],
-            is_deleted=False,
-        ).order_by("-priority")[:5]
-        
-        for mr in pending_maintenance:
-            priority_order = {"urgent": 4, "high": 3, "medium": 2, "low": 1}
-            pending_items.append({
-                "type": "maintenance",
-                "id": str(mr.id),
-                "title": mr.title,
-                "description": mr.description[:100] + "..." if len(mr.description) > 100 else mr.description,
-                "status": mr.status,
-                "priority": mr.priority,
-                "priority_order": priority_order.get(mr.priority, 1),
-                "date": mr.created_at.isoformat(),
-            })
-        
-        # Pending expenses
-        pending_expenses = Expense.objects.filter(
-            location_node__in=property_nodes,
-            status__in=["pending", "waiting_for_approval"],
-            is_deleted=False,
-        ).order_by("due_date")[:5]
-        
-        for exp in pending_expenses:
-            pending_items.append({
-                "type": "expense",
-                "id": str(exp.id),
-                "title": f"Pending Expense: {exp.description[:50]}...",
-                "description": f"Due: {exp.due_date.strftime('%Y-%m-%d')}",
-                "status": exp.status,
-                "amount": str(exp.total_amount),
-                "due_date": exp.due_date.isoformat(),
-            })
-        
-        # Sort pending items by priority/urgency
-        pending_items.sort(key=lambda x: (
-            x.get("priority_order", 0) if x["type"] == "maintenance" else 0,
-            x.get("due_date", "9999-12-31")
-        ), reverse=True)
-
-        # 7. COMPREHENSIVE OVERVIEW DATA
-        overview_data = {
-            "owner_profile": owner_profile,
-            "quick_stats": {
-                "total_properties": total_properties,
-                "occupied_properties": occupied_properties,
-                "occupancy_rate": round(occupancy_rate, 2),
-                "total_income": format_money_with_currency(total_income),
-                "pending_invoices": format_money_with_currency(pending_invoices),
-                "total_outstanding": format_money_with_currency(total_outstanding),
-            },
-            "properties_overview": properties_overview,
-            "financial_overview": financial_overview,
-            "recent_activity": recent_activity,
-            "pending_items": pending_items,
-        }
-
-        # Debug: Print the response structure
-        response_data = {
-            "error": False,
-            "data": {
-                "count": 1,
-                "results": [overview_data],
-            },
-        }
-        
-        print(f"OwnerOverviewView: Response structure: {response_data.keys()}")
-        print(f"OwnerOverviewView: Data keys: {response_data['data'].keys()}")
-        print(f"OwnerOverviewView: Results length: {len(response_data['data']['results'])}")
-        if response_data['data']['results']:
-            print(f"OwnerOverviewView: First result keys: {response_data['data']['results'][0].keys()}")
-            print(f"OwnerOverviewView: Owner profile keys: {response_data['data']['results'][0]['owner_profile'].keys()}")
-            print(f"OwnerOverviewView: Quick stats keys: {response_data['data']['results'][0]['quick_stats'].keys()}")
-            print(f"OwnerOverviewView: Financial overview keys: {response_data['data']['results'][0]['financial_overview'].keys()}")
-        
-        return Response(response_data, status=status.HTTP_200_OK)

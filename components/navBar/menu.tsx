@@ -1,5 +1,5 @@
 "use client";
-import { Bell, ChevronDown, Coins, LockOpen, LogOut, Menu as MenuIcon, Settings, UserCog, X } from 'lucide-react';
+import { Bell, ChevronDown, Coins, LockOpen, LogOut, Settings, UserCog } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,7 +21,6 @@ const Menu = () => {
   const path = usePathname();
   const [hoveredMenu, setHoveredMenu] = useState<number | null>(null);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { isSuperuser, hasPermission } = usePermissions();
 
@@ -89,7 +88,6 @@ const Menu = () => {
     clearTimeouts();
     setHoveredMenu(null);
     setIsMoreMenuOpen(false);
-    setIsMobileMenuOpen(false);
   }, [clearTimeouts]);
 
   // Cleanup timeouts on unmount
@@ -149,9 +147,9 @@ const Menu = () => {
     <>
       {/* Navbar Container */}
       <div className="top-0 right-0 left-0 z-[9999] sticky bg-white shadow-sm backdrop-blur-sm">
-        <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 xl:px-20 border-b min-h-18">
+        <div className="flex justify-between items-center px-6 md:px-40 border-b min-h-18">
           {/* Left - Logo */}
-          <div className="flex items-center gap-x-3 sm:gap-x-4 min-w-0 flex-1 sm:flex-none sm:w-[160px]">
+          <div className="flex items-center gap-x-4 w-[180px]">
             <Link
               href={"/"}
               className="rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -160,21 +158,19 @@ const Menu = () => {
                 <Image
                   src={"/images/logo.svg"}
                   alt={`${process.env.NEXT_PUBLIC_SITE_NAME} Logo`}
-                  width={32}
-                  height={32}
-                  className="sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-300"
+                  width={40}
+                  height={40}
+                  className="group-hover:scale-110 transition-transform duration-300"
                 />
-                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 min-w-0">
-                  <p className="font-bold text-primary text-lg sm:text-xl uppercase truncate">
-                    {process.env.NEXT_PUBLIC_SITE_NAME}
-                  </p>
-                </div>
+                <p className="font-bold text-primary text-xl uppercase">
+                  {process.env.NEXT_PUBLIC_SITE_NAME}
+                </p>
               </div>
             </Link>
           </div>
 
-          {/* Center Menu - Hidden on mobile */}
-          <div className="hidden lg:flex flex-1 justify-center items-center px-2">
+          {/* Center Menu */}
+          <div className="flex flex-1 justify-center items-center px-4">
             <nav
               className="flex justify-center items-center gap-1 md:gap-4"
               role="navigation"
@@ -438,8 +434,8 @@ const Menu = () => {
           </div>
 
           {/* Right Section */}
-          <div className="flex justify-end items-center gap-x-4 sm:gap-x-6 w-auto sm:w-[140px]">
-            <div className="flex items-center gap-x-3 sm:gap-x-5 text-gray-600">
+          <div className="flex justify-end items-center gap-x-8 w-[180px]">
+            <div className="flex items-center gap-x-5 text-gray-600">
               <button
                 className="relative hover:bg-gray-100 p-1.5 rounded-full transition-colors duration-200"
                 aria-label="Notifications"
@@ -518,84 +514,8 @@ const Menu = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle mobile menu"
-            >
-              {isMobileMenuOpen ? (
-                <X size={24} className="text-gray-600" />
-              ) : (
-                <MenuIcon size={24} className="text-gray-600" />
-              )}
-            </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden border-t bg-white">
-            <div className="px-4 py-6 space-y-4">
-              {visibleMenus.map((menu, index) => (
-                <div key={index} className="space-y-2">
-                  <Link
-                    href={menu.url || "#"}
-                    className={`flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isMenuActive(menu)
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                    onClick={handleMenuSelect}
-                  >
-                    <div className="flex items-center gap-3">
-                      <menu.icon
-                        size={20}
-                        className={isMenuActive(menu) ? "text-white" : "text-gray-500"}
-                        strokeWidth={1.75}
-                      />
-                      <span className="font-medium">{menu.name}</span>
-                    </div>
-                    {Array.isArray(menu.subMenus) && menu.subMenus.length > 0 && (
-                      <ChevronDown
-                        size={16}
-                        className={`transition-transform duration-200 ${
-                          hoveredMenu === menu.id ? "rotate-180" : ""
-                        }`}
-                      />
-                    )}
-                  </Link>
-                  
-                  {/* Mobile Submenu */}
-                  {Array.isArray(menu.subMenus) && menu.subMenus.length > 0 && (
-                    <div className="ml-8 space-y-2">
-                      {visibleSubMenus(menu.subMenus).map((submenu, idx) => (
-                        <Link
-                          key={idx}
-                          href={submenu.url}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
-                            isSubmenuActive(submenu.url)
-                              ? "bg-primary/10 text-primary"
-                              : "text-gray-600 hover:bg-gray-50"
-                          }`}
-                          onClick={handleMenuSelect}
-                        >
-                          <submenu.icon
-                            size={16}
-                            className={isSubmenuActive(submenu.url) ? "text-primary" : "text-gray-400"}
-                            strokeWidth={1.75}
-                          />
-                          <span className="text-sm">{submenu.name}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Overlay for mega menu */}

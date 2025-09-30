@@ -1,15 +1,11 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from django.core.files.base import ContentFile
-from jinja2 import Template as JinjaTemplate
-from weasyprint import HTML
 
 from ..models import AssignedDocument
 from accounts.models import Users
 from properties.models import LocationNode
 from documents.models import ContractTemplate
-from utils.format import format_money_with_currency
 
 
 class OfferLetterSerializer(serializers.ModelSerializer):
@@ -195,69 +191,6 @@ class OfferLetterSerializer(serializers.ModelSerializer):
 
         return data
 
-    def generate_offer_letter_pdf(self, offer_letter, template):
-        """Generate PDF for offer letter using WeasyPrint"""
-        try:
-            # Build context variables
-            context = {
-                "buyer_full_name": offer_letter.buyer.get_full_name(),
-                "buyer_email": offer_letter.buyer.email,
-                "buyer_phone": offer_letter.buyer.phone,
-                "property_name": offer_letter.property_node.name,
-                "project_name": self.get_project_name(offer_letter.property_node),
-                "offer_price": format_money_with_currency(offer_letter.price),
-                "down_payment": format_money_with_currency(offer_letter.down_payment),
-                "down_payment_percentage": f"{offer_letter.down_payment_percentage:.1f}%",
-                "due_date": offer_letter.due_date.strftime("%B %d, %Y"),
-                "offer_date": offer_letter.created_at.strftime("%B %d, %Y"),
-                "notes": offer_letter.notes or "",
-                "document_type": "Offer Letter",
-                "document_title": f"Offer Letter - {offer_letter.property_node.name}",
-            }
-            
-            # Render template with Jinja2
-            jinja_template = JinjaTemplate(template.template_content)
-            generated_html = jinja_template.render(**context)
-            
-            # Generate PDF with WeasyPrint
-            pdf_bytes = HTML(string=generated_html).write_pdf()
-            
-            return pdf_bytes
-            
-        except Exception as e:
-            print(f"Error generating PDF for offer letter: {e}")
-            return None
-
-    def get_project_name(self, property_node):
-        """Get project name by traversing up the tree"""
-        try:
-            project_ancestor = (
-                property_node.get_ancestors(include_self=True)
-                .filter(node_type="PROJECT")
-                .first()
-            )
-            return project_ancestor.name if project_ancestor else "Unknown Project"
-        except Exception:
-            return "Unknown Project"
-
-    def _create_test_pdf(self, offer_letter):
-        """Create a simple test PDF if main generation fails"""
-        try:
-            simple_html = f"""
-            <html>
-                <body>
-                    <h1>Test Offer Letter</h1>
-                    <p>Buyer: {offer_letter.buyer.get_full_name()}</p>
-                    <p>Property: {offer_letter.property_node.name}</p>
-                    <p>Status: {offer_letter.status}</p>
-                    <p>Created: {offer_letter.created_at}</p>
-                </body>
-            </html>
-            """
-            return HTML(string=simple_html).write_pdf()
-        except Exception:
-            return None
-
     def create(self, validated_data):
         """Create offer letter documents for each buyer-property combination"""
         # Extract custom fields
@@ -309,26 +242,6 @@ class OfferLetterSerializer(serializers.ModelSerializer):
                     status="draft",
                     created_by=self.context["request"].user,
                 )
-
-                # Generate PDF for the offer letter
-                try:
-                    pdf_bytes = self.generate_offer_letter_pdf(offer_letter, template)
-                    
-                    if pdf_bytes:
-                        # Save PDF to document_file field
-                        filename = f"offer_letter_{property_node.name}_{buyer.get_full_name().replace(' ', '_')}.pdf"
-                        offer_letter.document_file.save(filename, ContentFile(pdf_bytes), save=False)
-                        offer_letter.save()  # Save to persist the PDF file reference
-                    else:
-                        # Fallback: create simple test PDF if main generation fails
-                        test_pdf = self._create_test_pdf(offer_letter)
-                        if test_pdf:
-                            filename = f"test_offer_letter_{offer_letter.id}.pdf"
-                            offer_letter.document_file.save(filename, ContentFile(test_pdf), save=False)
-                            offer_letter.save()
-                except Exception as e:
-                    print(f"PDF generation failed for offer letter {offer_letter.id}: {str(e)}")
-                    # Continue without PDF - document will still be created
 
                 created_documents.append(offer_letter)
 

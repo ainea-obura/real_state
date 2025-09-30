@@ -1,19 +1,17 @@
 from django.urls import path
 
 from payments.invoice import (
+    BulkInvoiceUploadView,
     InvoiceCancelView,
     InvoiceCreateView,
     InvoiceDeleteView,
-    InvoiceDetailView,
     InvoiceDownloadPDFView,
     InvoiceSendView,
     InvoiceStatsSummaryView,
     InvoiceTableListView,
     InvoiceUpdateView,
-    OwnerInvoicesView,
     OwnerNodeItemDetailsView,
     RecipientUserListView,
-    TenantInvoicesView,
     TenantUnitItemDetailsView,
 )
 from payments.payment import CreateCreditNoteView
@@ -33,13 +31,6 @@ urlpatterns = [
     path("create-invoice", InvoiceCreateView.as_view(), name="invoice-create"),
     path("stats-summary", InvoiceStatsSummaryView.as_view(), name="invoice-stats"),
     path("list", InvoiceTableListView.as_view(), name="invoice-table"),
-    path("tenant-invoices", TenantInvoicesView.as_view(), name="tenant-invoices"),
-    path("owner-invoices", OwnerInvoicesView.as_view(), name="owner-invoices"),
-    path(
-        "<uuid:invoice_id>/detail",
-        InvoiceDetailView.as_view(),
-        name="invoice-detail",
-    ),
     path(
         "<uuid:invoice_id>/download-pdf",
         InvoiceDownloadPDFView.as_view(),
@@ -69,5 +60,10 @@ urlpatterns = [
         "create-credit-note",
         CreateCreditNoteView.as_view(),
         name="create-credit-note",
+    ),
+    path(
+        "bulk-upload",
+        BulkInvoiceUploadView.as_view(),
+        name="bulk-invoice-upload",
     ),
 ]

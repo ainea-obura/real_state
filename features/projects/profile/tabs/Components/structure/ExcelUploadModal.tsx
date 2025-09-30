@@ -136,16 +136,44 @@ export default function ExcelUploadModal({
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
             // Skip header row and parse data
+           // data = jsonData
+             // .slice(1)
+              //.map((row: any) => {
+                //const [block_house_name, floor, units] = row;
+                //return {
+                  //block_house_name: String(block_house_name || "").trim(),
+                  //floor: parseInt(String(floor || 0)) || 0,
+                  //units:
+                    //units === "-" ? "-" : parseInt(String(units || 0)) || 0,
+                //};
+              //})
+              //.filter((item) => item.block_house_name && item.floor > 0);
             data = jsonData
               .slice(1)
-              .map((row: any) => {
+              .flatMap((row: any) => {
                 const [block_house_name, floor, units] = row;
-                return {
-                  block_house_name: String(block_house_name || "").trim(),
-                  floor: parseInt(String(floor || 0)) || 0,
-                  units:
-                    units === "-" ? "-" : parseInt(String(units || 0)) || 0,
-                };
+                const floorCount = parseInt(String(floor || 0)) || 0;
+                const blockHouseName = String(block_house_name || "").trim();
+                const unitsValue = units === "-" ? "-" : parseInt(String(units || 0)) || 0;
+
+                if (floorCount > 1) {
+                  // Expand into floors 1..N
+                  const expandedFloors = [];
+                  for (let f = 1; f <= floorCount; f++) {
+                    expandedFloors.push({
+                      block_house_name: blockHouseName,
+                      floor: f,
+                      units: unitsValue,
+                    });
+                  }
+                  return expandedFloors;
+                } else {
+                  return [{
+                    block_house_name: blockHouseName,
+                    floor: floorCount,
+                    units: unitsValue,
+                  }];
+                }
               })
               .filter((item) => item.block_house_name && item.floor > 0);
           }

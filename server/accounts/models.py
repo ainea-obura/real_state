@@ -101,6 +101,7 @@ class Users(AbstractUser):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, null=True, blank=True)
+    # phone = models.CharField(max_length=50)
     phone = models.CharField(max_length=50, null=True, blank=True)
     gender = models.CharField(
         max_length=10, choices=GENDER_CHOICES, null=True, blank=True
@@ -411,6 +412,7 @@ class UserVerification(models.Model):
         indexes = [
             models.Index(fields=["user", "category", "status"]),
         ]
+        unique_together = ["user", "category", "id_number"]
 
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.category} ({self.status})"

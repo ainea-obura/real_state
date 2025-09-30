@@ -624,7 +624,7 @@ export default function CreateOfferLetterModal({
           <div className="space-y-6">
             {/* Template Selection - Full Width */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="font-medium text-gray-700 text-sm">
                 Offer Letter Template *
               </Label>
 
@@ -635,7 +635,7 @@ export default function CreateOfferLetterModal({
                   setValue("templateId", value);
                 }}
               >
-                <SelectTrigger className="w-full h-11 bg-white border border-gray-300 hover:bg-gray-50">
+                <SelectTrigger className="bg-white hover:bg-gray-50 border border-gray-300 w-full h-11">
                   <SelectValue
                     placeholder="Select an offer letter template"
                     className="text-gray-500"
@@ -643,7 +643,7 @@ export default function CreateOfferLetterModal({
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
                   {isLoadingTemplates ? (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-4 text-gray-500 text-center">
                       <Loader2 className="mx-auto mb-2 w-6 h-6 animate-spin" />
                       <p>Loading templates...</p>
                     </div>
@@ -652,7 +652,7 @@ export default function CreateOfferLetterModal({
                       <SelectItem
                         key={template.id}
                         value={template.id}
-                        className="cursor-pointer hover:bg-gray-100"
+                        className="hover:bg-gray-100 cursor-pointer"
                       >
                         <div className="flex items-center space-x-2">
                           <FileText className="w-4 h-4 text-blue-500" />
@@ -661,7 +661,7 @@ export default function CreateOfferLetterModal({
                       </SelectItem>
                     ))
                   ) : (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-4 text-gray-500 text-center">
                       <FileText className="mx-auto mb-2 w-6 h-6 text-gray-400" />
                       <p>No offer letter templates found</p>
                       <p className="mt-1 text-xs">
@@ -673,20 +673,20 @@ export default function CreateOfferLetterModal({
               </Select>
 
               {errors.templateId && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-red-500 text-xs">
                   {errors.templateId.message}
                 </p>
               )}
 
               {/* Help Text */}
-              <p className="text-xs text-gray-500">
+              <p className="text-gray-500 text-xs">
                 Select a template to generate the offer letter. Templates define
                 the structure and content.
               </p>
             </div>
 
             {/* Three Column Layout */}
-            <div className="grid grid-cols-3 gap-6">
+            <div className="gap-6 grid grid-cols-3">
               {/* First Column - Offer Price */}
               <div className="space-y-3">
                 <Label>Offer Price (KES)</Label>
@@ -707,12 +707,12 @@ export default function CreateOfferLetterModal({
                   }
                 />
                 {errors.offerPrice && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-red-500 text-xs">
                     {errors.offerPrice.message}
                   </p>
                 )}
                 {(selectedUnits.length > 0 || selectedHouses.length > 0) && (
-                  <p className="text-xs text-green-600">
+                  <p className="text-green-600 text-xs">
                     ✓ Price auto-populated from selected properties
                   </p>
                 )}
@@ -736,12 +736,12 @@ export default function CreateOfferLetterModal({
                   disabled={offerPrice === 0}
                 />
                 {errors.downPayment && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-red-500 text-xs">
                     {errors.downPayment.message}
                   </p>
                 )}
                 {offerPrice > 0 && (
-                  <p className="text-xs text-blue-600">
+                  <p className="text-blue-600 text-xs">
                     ✓ Auto-calculated as 20% of offer price
                   </p>
                 )}
@@ -758,7 +758,7 @@ export default function CreateOfferLetterModal({
                   min={new Date().toISOString().split("T")[0]}
                 />
                 {errors.dueDate && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-red-500 text-xs">
                     {errors.dueDate.message}
                   </p>
                 )}
@@ -784,24 +784,24 @@ export default function CreateOfferLetterModal({
           <div className="space-y-6">
             {/* Header Section */}
             <div className="space-y-2 text-center">
-              <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full">
+              <div className="flex justify-center items-center bg-gradient-to-br from-green-400 to-green-600 mx-auto mb-4 rounded-full w-16 h-16">
                 <FileText className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="font-bold text-gray-900 text-2xl">
                 Review Offer Letter
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-gray-600 text-sm">
                 Please review all details before creating the offer letter
               </p>
             </div>
 
             {/* Validation Summary */}
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="bg-blue-50 p-4 border border-blue-200 rounded-lg">
               <h4 className="flex items-center mb-3 font-semibold text-blue-900">
                 <CheckCircle2 className="mr-2 w-5 h-5" />
                 Validation Summary
               </h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="gap-4 grid grid-cols-2 text-sm">
                 <div className="space-y-2">
                   <div
                     className={`flex items-center ${
@@ -811,7 +811,7 @@ export default function CreateOfferLetterModal({
                     {selectedProject ? (
                       <CheckCircle2 className="mr-2 w-4 h-4" />
                     ) : (
-                      <div className="mr-2 w-4 h-4 rounded-full border-2 border-red-600" />
+                      <div className="mr-2 border-2 border-red-600 rounded-full w-4 h-4" />
                     )}
                     Project Selected
                   </div>
@@ -825,7 +825,7 @@ export default function CreateOfferLetterModal({
                     {selectedUnits.length > 0 || selectedHouses.length > 0 ? (
                       <CheckCircle2 className="mr-2 w-4 h-4" />
                     ) : (
-                      <div className="mr-2 w-4 h-4 rounded-full border-2 border-red-600" />
+                      <div className="mr-2 border-2 border-red-600 rounded-full w-4 h-4" />
                     )}
                     Properties Selected (
                     {selectedUnits.length + selectedHouses.length})
@@ -840,7 +840,7 @@ export default function CreateOfferLetterModal({
                     {selectedBuyers.length > 0 ? (
                       <CheckCircle2 className="mr-2 w-4 h-4" />
                     ) : (
-                      <div className="mr-2 w-4 h-4 rounded-full border-2 border-red-600" />
+                      <div className="mr-2 border-2 border-red-600 rounded-full w-4 h-4" />
                     )}
                     Buyers Selected ({selectedBuyers.length})
                   </div>
@@ -856,7 +856,7 @@ export default function CreateOfferLetterModal({
                     {form.watch("templateId") ? (
                       <CheckCircle2 className="mr-2 w-4 h-4" />
                     ) : (
-                      <div className="mr-2 w-4 h-4 rounded-full border-2 border-red-600" />
+                      <div className="mr-2 border-2 border-red-600 rounded-full w-4 h-4" />
                     )}
                     Template Selected
                   </div>
@@ -868,7 +868,7 @@ export default function CreateOfferLetterModal({
                     {offerPrice > 0 ? (
                       <CheckCircle2 className="mr-2 w-4 h-4" />
                     ) : (
-                      <div className="mr-2 w-4 h-4 rounded-full border-2 border-red-600" />
+                      <div className="mr-2 border-2 border-red-600 rounded-full w-4 h-4" />
                     )}
                     Offer Price Set
                   </div>
@@ -880,7 +880,7 @@ export default function CreateOfferLetterModal({
                     {form.watch("dueDate") ? (
                       <CheckCircle2 className="mr-2 w-4 h-4" />
                     ) : (
-                      <div className="mr-2 w-4 h-4 rounded-full border-2 border-red-600" />
+                      <div className="mr-2 border-2 border-red-600 rounded-full w-4 h-4" />
                     )}
                     Due Date Set
                   </div>
@@ -889,18 +889,18 @@ export default function CreateOfferLetterModal({
             </div>
 
             {/* Main Summary Cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
               {/* Project & Property Details */}
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-                <div className="flex items-center mb-4 space-x-3">
-                  <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-lg">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 border border-blue-200 rounded-xl">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex justify-center items-center bg-blue-100 rounded-lg w-10 h-10">
                     <Building2 className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-blue-900">
+                    <h4 className="font-semibold text-blue-900 text-lg">
                       Project Details
                     </h4>
-                    <p className="text-sm text-blue-600">
+                    <p className="text-blue-600 text-sm">
                       Property Information
                     </p>
                   </div>
@@ -937,21 +937,21 @@ export default function CreateOfferLetterModal({
               </div>
 
               {/* Buyer Details */}
-              <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-                <div className="flex items-center mb-4 space-x-3">
-                  <div className="flex justify-center items-center w-10 h-10 bg-purple-100 rounded-lg">
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 border border-purple-200 rounded-xl">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex justify-center items-center bg-purple-100 rounded-lg w-10 h-10">
                     <Users className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-purple-900">
+                    <h4 className="font-semibold text-purple-900 text-lg">
                       Buyer Information
                     </h4>
-                    <p className="text-sm text-purple-600">Client Details</p>
+                    <p className="text-purple-600 text-sm">Client Details</p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-purple-100">
+                  <div className="flex justify-between items-center py-2 border-purple-100 border-b">
                     <span className="font-medium text-purple-700">Buyers</span>
                     <span className="font-semibold text-purple-900">
                       {selectedBuyers.length} selected
@@ -971,28 +971,28 @@ export default function CreateOfferLetterModal({
             </div>
 
             {/* Financial Summary Card */}
-            <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-              <div className="flex items-center mb-4 space-x-3">
-                <div className="flex justify-center items-center w-10 h-10 bg-green-100 rounded-lg">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 border border-green-200 rounded-xl">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="flex justify-center items-center bg-green-100 rounded-lg w-10 h-10">
                   <DollarSign className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-green-900">
+                  <h4 className="font-semibold text-green-900 text-lg">
                     Financial Summary
                   </h4>
-                  <p className="text-sm text-green-600">
+                  <p className="text-green-600 text-sm">
                     Pricing & Payment Details
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="gap-6 grid grid-cols-2">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-green-100">
+                  <div className="flex justify-between items-center py-2 border-green-100 border-b">
                     <span className="font-medium text-green-700">
                       Offer Price
                     </span>
-                    <span className="text-lg font-bold text-green-900">
+                    <span className="font-bold text-green-900 text-lg">
                       KES {offerPrice.toLocaleString()}
                     </span>
                   </div>
@@ -1001,18 +1001,18 @@ export default function CreateOfferLetterModal({
                     <span className="font-medium text-green-700">
                       Down Payment
                     </span>
-                    <span className="text-lg font-bold text-green-900">
+                    <span className="font-bold text-green-900 text-lg">
                       KES {downPayment.toLocaleString()}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-green-100">
+                  <div className="flex justify-between items-center py-2 border-green-100 border-b">
                     <span className="font-medium text-green-700">
                       Remaining
                     </span>
-                    <span className="text-lg font-bold text-green-900">
+                    <span className="font-bold text-green-900 text-lg">
                       KES {(offerPrice - downPayment).toLocaleString()}
                     </span>
                   </div>
@@ -1021,7 +1021,7 @@ export default function CreateOfferLetterModal({
                     <span className="font-medium text-green-700">
                       Payment %
                     </span>
-                    <span className="text-lg font-bold text-green-900">
+                    <span className="font-bold text-green-900 text-lg">
                       {Math.round((downPayment / offerPrice) * 100)}%
                     </span>
                   </div>
@@ -1031,23 +1031,23 @@ export default function CreateOfferLetterModal({
 
             {/* Notes Section (if exists) */}
             {form.watch("notes") && (
-              <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-                <div className="flex items-center mb-4 space-x-3">
-                  <div className="flex justify-center items-center w-10 h-10 bg-amber-100 rounded-lg">
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 border border-amber-200 rounded-xl">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex justify-center items-center bg-amber-100 rounded-lg w-10 h-10">
                     <FileText className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-amber-900">
+                    <h4 className="font-semibold text-amber-900 text-lg">
                       Additional Notes
                     </h4>
-                    <p className="text-sm text-amber-600">
+                    <p className="text-amber-600 text-sm">
                       Special Instructions
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border border-amber-100 bg-white/60">
-                  <p className="text-sm leading-relaxed text-amber-900">
+                <div className="bg-white/60 p-4 border border-amber-100 rounded-lg">
+                  <p className="text-amber-900 text-sm leading-relaxed">
                     {form.watch("notes")}
                   </p>
                 </div>
@@ -1067,10 +1067,10 @@ export default function CreateOfferLetterModal({
       <DialogContent className="mt-10 p-0 min-w-4xl h-[calc(100vh-100px)] overflow-y-hidden">
         <Form {...form}>
           <DialogHeader className="flex flex-col flex-shrink-0 items-start px-4 py-2 border-b h-[140px]">
-            <DialogTitle className="text-base font-semibold text-gray-900">
+            <DialogTitle className="font-semibold text-gray-900 text-base">
               Create Offer Letter
             </DialogTitle>
-            <p className="mb-1 text-xs text-gray-600">
+            <p className="mb-1 text-gray-600 text-xs">
               Step {currentStep} of {steps.length}
             </p>
             {/* Stepper */}

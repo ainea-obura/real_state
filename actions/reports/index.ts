@@ -401,3 +401,144 @@ export const downloadServiceSummaryExcel = async (
     };
   }
 };
+
+/**
+ * Fetch Profit and Loss report data
+ */
+export const fetchProfitLossReport = async (dateRange?: {
+  from: Date;
+  to?: Date;
+}): Promise<any> => {
+  const session = await getServerSession(authOptions);
+  const token = session?.accessToken;
+  if (!token) throw new Error("Authentication required");
+
+  // Build query parameters
+  const params = new URLSearchParams();
+  if (dateRange?.from) {
+    params.append("date_from", dateRange.from.toISOString().split("T")[0]);
+  }
+  if (dateRange?.to) {
+    params.append("date_to", dateRange.to.toISOString().split("T")[0]);
+  }
+
+  const url = `${API_BASE_URL}/reports/profit-loss/${
+    params.toString() ? `?${params.toString()}` : ""
+  }`;
+  
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch Profit and Loss report: ${response.status} - ${errorText}`
+    );
+  }
+  
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.message || "Failed to fetch Profit and Loss report");
+  }
+  
+  return data.data;
+};
+
+/**
+ * Fetch Cash Flow report data
+ */
+export const fetchCashFlowReport = async (dateRange?: {
+  from: Date;
+  to?: Date;
+}): Promise<any> => {
+  const session = await getServerSession(authOptions);
+  const token = session?.accessToken;
+  if (!token) throw new Error("Authentication required");
+
+  // Build query parameters
+  const params = new URLSearchParams();
+  if (dateRange?.from) {
+    params.append("date_from", dateRange.from.toISOString().split("T")[0]);
+  }
+  if (dateRange?.to) {
+    params.append("date_to", dateRange.to.toISOString().split("T")[0]);
+  }
+
+  const url = `${API_BASE_URL}/reports/cash-flow/${
+    params.toString() ? `?${params.toString()}` : ""
+  }`;
+  
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch Cash Flow report: ${response.status} - ${errorText}`
+    );
+  }
+  
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.message || "Failed to fetch Cash Flow report");
+  }
+  
+  return data.data;
+};
+
+/**
+ * Fetch Balance Sheet report data
+ */
+export const fetchBalanceSheetReport = async (dateRange?: {
+  from: Date;
+  to?: Date;
+}): Promise<any> => {
+  const session = await getServerSession(authOptions);
+  const token = session?.accessToken;
+  if (!token) throw new Error("Authentication required");
+
+  // Build query parameters
+  const params = new URLSearchParams();
+  if (dateRange?.from) {
+    params.append("date_from", dateRange.from.toISOString().split("T")[0]);
+  }
+  if (dateRange?.to) {
+    params.append("date_to", dateRange.to.toISOString().split("T")[0]);
+  }
+
+  const url = `${API_BASE_URL}/reports/balance-sheet/${
+    params.toString() ? `?${params.toString()}` : ""
+  }`;
+  
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch Balance Sheet report: ${response.status} - ${errorText}`
+    );
+  }
+  
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.message || "Failed to fetch Balance Sheet report");
+  }
+  
+  return data.data;
+};

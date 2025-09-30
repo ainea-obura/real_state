@@ -84,63 +84,57 @@ class DashboardSerializer(serializers.Serializer):
 
     def _get_unit_counts(self):
         """Get counts of units by status"""
-        # Get units for sale
-        units_for_sale = UnitDetail.objects.filter(
-            management_status="for_sale"
-        )
+        # Get all units
+        all_units = LocationNode.objects.filter(node_type='UNIT')
+        total_units = all_units.count()
         
-        # Count by status
-        available_count = units_for_sale.filter(status="available").count()
-        sold_count = units_for_sale.filter(status="sold").count()
+        # Count by status using unit_detail
+        available_count = 0
+        sold_count = 0
+        booked_count = 0
         
-        # Count booked units (units with pending sales)
-        booked_count = PropertySaleItem.objects.filter(
-            sale__status="pending",
-            property_node__node_type="UNIT"
-        ).count()
+        for unit in all_units:
+            if hasattr(unit, 'unit_detail') and unit.unit_detail:
+                status = unit.unit_detail.status
+                if status == 'sold':
+                    sold_count += 1
+                elif status == 'booked':
+                    booked_count += 1
+                else:
+                    available_count += 1
+            else:
+                available_count += 1
         
         return {
-            "available": available_count - booked_count,  # Available minus booked
+            "available": available_count,
             "sold": sold_count,
             "booked": booked_count,
         }
 
     def _get_revenue_data(self, start_date, end_date):
         """Get revenue data for the specified date range"""
-        # Get completed sales only
-        completed_sales = PropertySale.objects.filter(
-            status="completed",
+        # Get all sales (not just completed ones for now)
+        all_sales = PropertySale.objects.filter(
             sale_date__range=[start_date, end_date]
         )
         
-        # Get payment schedules for completed sales
-        payment_schedules = PaymentSchedule.objects.filter(
-            payment_plan__sale_item__sale__in=completed_sales
-        )
+        # Get total sales value
+        total_sales_value = PropertySaleItem.objects.filter(
+            sale__in=all_sales
+        ).aggregate(total=Sum("sale_price"))["total"] or 0
         
-        # Total collected revenue
-        total_collected = payment_schedules.filter(
-            status="paid",
-            paid_date__range=[start_date, end_date]
-        ).aggregate(total=Sum("paid_amount"))["total"] or 0
+        # Get total down payments
+        total_down_payments = PropertySaleItem.objects.filter(
+            sale__in=all_sales
+        ).aggregate(total=Sum("down_payment"))["total"] or 0
         
-        # Total outstanding payments
-        total_outstanding = payment_schedules.filter(
-            status="pending"
-        ).aggregate(total=Sum("amount"))["total"] or 0
-        
-        # Add overdue payments
-        overdue_amount = payment_schedules.filter(
-            status="pending",
-            due_date__lt=timezone.now().date()
-        ).aggregate(total=Sum("amount"))["total"] or 0
-        
-        total_outstanding += overdue_amount
+        # Outstanding is sales value minus down payments
+        total_outstanding = total_sales_value - total_down_payments
         
         return {
-            "total_collected": total_collected,
+            "total_collected": total_down_payments,
             "total_outstanding": total_outstanding,
-            "overdue_amount": overdue_amount,
+            "overdue_amount": 0,  # Simplified for now
         }
 
     def _get_finance_series(self, start_date, end_date):

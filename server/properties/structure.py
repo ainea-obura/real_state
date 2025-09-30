@@ -2,7 +2,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -1764,4 +1764,111 @@ class BulkStructureUploadView(APIView):
                     "data": {"count": len(tree), "results": tree},
                 },
                 status=status.HTTP_201_CREATED,
+            )
+
+
+# check apartment number:
+@extend_schema(
+    tags=["Structure"],
+    description="Check if an apartment exists by apartment number (e.g., B101, A205)",
+    parameters=[
+        OpenApiParameter(
+            name="number",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description="Apartment number to check (e.g., B101, A205)",
+            required=True,
+        ),
+    ],
+    responses={
+        200: OpenApiResponse(description="Apartment exists"),
+        404: OpenApiResponse(description="Apartment not found"),
+        400: OpenApiResponse(description="Invalid apartment number format"),
+    },
+)
+class ApartmentCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        apartment_number = request.query_params.get("number")
+        
+        if not apartment_number:
+            return Response(
+                {
+                    "error": True,
+                    "message": "Apartment number is required",
+                    "data": None,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # More flexible apartment number validation - accept any alphanumeric format or pure numbers
+        import re
+        # Allow any format that contains letters and numbers, or pure numbers
+        apartment_pattern = r"^[A-Za-z0-9]+$"
+        if not re.match(apartment_pattern, apartment_number) or not apartment_number.strip():
+            return Response(
+                {
+                    "error": True,
+                    "message": "Invalid apartment number format. Must contain letters and/or numbers.",
+                    "data": None,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Search for apartment by name (apartment number) - EXACT MATCH ONLY for security
+            apartment = LocationNode.objects.filter(
+                name__iexact=apartment_number,
+                node_type="UNIT",
+                is_deleted=False
+            ).first()
+
+            if apartment:
+                # Get apartment details
+                apartment_detail = UnitDetail.objects.filter(
+                    node=apartment
+                ).first()
+
+                return Response(
+                    {
+                        "error": False,
+                        "message": f"Apartment {apartment_number} found",
+                        "data": {
+                            "apartment_number": apartment_number,
+                            "apartment_id": str(apartment.id),
+                            "apartment_name": apartment.name,
+                            "project_id": str(apartment.parent.parent.parent.id) if apartment.parent and apartment.parent.parent and apartment.parent.parent.parent else None,
+                            "block_name": apartment.parent.parent.name if apartment.parent and apartment.parent.parent else None,
+                            "floor_number": apartment.parent.floor_detail.number if apartment.parent and hasattr(apartment.parent, 'floor_detail') and apartment.parent.floor_detail else None,
+                            "apartment_detail": {
+                                "unit_type": apartment_detail.unit_type if apartment_detail else None,
+                                "size": apartment_detail.size if apartment_detail else None,
+                                "status": apartment_detail.status if apartment_detail else None,
+                                "management_mode": apartment_detail.management_mode if apartment_detail else None,
+                                "rental_price": float(apartment_detail.rental_price) if apartment_detail and apartment_detail.rental_price else None,
+                                "sale_price": float(apartment_detail.sale_price) if apartment_detail and apartment_detail.sale_price else None,
+                            } if apartment_detail else None,
+                        },
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "error": True,
+                        "message": f"Apartment {apartment_number} not found",
+                        "data": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": True,
+                    "message": f"Error checking apartment: {str(e)}",
+                    "data": None,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

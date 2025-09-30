@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { useKYCUpload } from './useKYC';
+import { uploadKYCDocuments } from '@/actions/company/kyc';
 
 interface Director {
   id: number;
@@ -60,7 +60,7 @@ const FileUploadField = ({
   name: string;
   label: string;
   description: string;
-  form: ReturnType<typeof useForm<Record<string, unknown>>>;
+  form: any;
   isPending: boolean;
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -69,10 +69,14 @@ const FileUploadField = ({
     size: string;
   } | null>(null);
 
+  // Watch the form value for this field
+  const fieldValue = form.watch(name);
+
   const onDrop = useCallback(
     (files: File[]) => {
       const file = files[0];
       if (file) {
+        console.log(`File selected for ${name}:`, file.name, file.size);
         form.setValue(name, file, { shouldDirty: true });
         setPreview(URL.createObjectURL(file));
         setFileInfo({
@@ -93,6 +97,15 @@ const FileUploadField = ({
     },
     maxFiles: 1,
     maxSize: 1 * 1024 * 1024, // 1MB
+    onDropAccepted: (files) => {
+      console.log("Files accepted:", files);
+    },
+    onDropRejected: (fileRejections) => {
+      console.log("Files rejected:", fileRejections);
+    },
+    onError: (error) => {
+      console.error("Dropzone error:", error);
+    },
   });
 
   const handleRemove = (e: React.MouseEvent) => {
@@ -102,12 +115,46 @@ const FileUploadField = ({
     setFileInfo(null);
   };
 
+  const handleClick = () => {
+    console.log(`Clicked on ${name} upload area`);
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,.jpg,.jpeg,.png";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        console.log(`File selected via click for ${name}:`, file.name, file.size);
+        onDrop([file]);
+      }
+    };
+    input.click();
+  };
+
+  // Update preview when form value changes
+  useEffect(() => {
+    console.log(`Field ${name} value changed:`, fieldValue);
+    if (fieldValue && fieldValue instanceof File) {
+      console.log(`Setting preview for ${name}:`, fieldValue.name);
+      setPreview(URL.createObjectURL(fieldValue));
+      setFileInfo({
+        name: fieldValue.name,
+        size: (fieldValue.size / 1024 / 1024).toFixed(2) + " MB",
+      });
+    } else {
+      setPreview(null);
+      setFileInfo(null);
+    }
+  }, [fieldValue, name]);
+
   // Clean up preview URL
   useEffect(() => {
     return () => {
       if (preview) URL.revokeObjectURL(preview);
     };
   }, [preview]);
+
+  // Debug: Log when component renders
+  console.log(`Rendering FileUploadField for ${name}`);
 
   return (
     <FormField
@@ -121,6 +168,7 @@ const FileUploadField = ({
           <FormControl>
             <div
               {...getRootProps()}
+              onClick={handleClick}
               className={`
                 relative group overflow-hidden
                 p-6 border-2 border-dashed rounded-xl transition-all duration-300 ease-in-out
@@ -179,7 +227,7 @@ const FileUploadField = ({
                   </div>
                   <div className="text-center">
                     <p className="mb-1 font-medium text-gray-700 text-sm">
-                      Click to Uppload
+                      Click to Upload
                     </p>
                     <p className="mb-1 text-gray-500 text-xs">{description}</p>
                     <p className="text-gray-400 text-xs">
@@ -204,9 +252,14 @@ export default function KYCUploadModal({
   existingDocuments,
   onUploadSuccess,
 }: KYCUploadModalProps) {
+  console.log("KYCUploadModal rendered, isOpen:", isOpen);
+  
   const [directors, setDirectors] = useState<Director[]>([
     { id: 1, name: "Director 1", files: {} },
   ]);
+  
+  // Add uploading state for direct SasaPay submission
+  const [uploading, setUploading] = useState(false);
 
   // KYC documents configuration
   const kycDocuments = [
@@ -299,8 +352,6 @@ export default function KYCUploadModal({
     },
   });
 
-  const uploadMutation = useKYCUpload(companyId);
-
   // Move form-dependent logic here after form is initialized
   const formValues = form.watch();
 
@@ -339,13 +390,13 @@ export default function KYCUploadModal({
     const completedDirectorNumbers = new Set();
     existingDirectorsMap.forEach((docs, directorNum) => {
       const hasFront = docs.some(
-        (d) => d.director_document_type === "id_card_front"
+        (d: any) => d.director_document_type === "id_card_front"
       );
       const hasBack = docs.some(
-        (d) => d.director_document_type === "id_card_back"
+        (d: any) => d.director_document_type === "id_card_back"
       );
       const hasKraPin = docs.some(
-        (d) => d.director_document_type === "kra_pin"
+        (d: any) => d.director_document_type === "kra_pin"
       );
 
       if (hasFront && hasBack && hasKraPin) {
@@ -508,73 +559,86 @@ export default function KYCUploadModal({
     );
   }, [formValues, directors, kycDocuments, unuploadedDocuments]);
 
-  const onSubmit = (data: Record<string, unknown>) => {
+  const onSubmit = async (data: Record<string, unknown>) => {
     if (!hasAnyFilesSelected) {
       toast.error("Please select at least one document to upload");
       return;
     }
 
-    const formData = new FormData();
+    try {
+      setUploading(true);
+      
+      // Prepare form data with all files
+      const formData = new FormData();
+      
+      // Add company documents
+      Object.keys(data).forEach((key) => {
+        if (data[key] && data[key] instanceof File) {
+          formData.append(key, data[key] as File);
+        }
+      });
+      
+      // Add director documents
+      visibleDirectors.forEach((director, index) => {
+        const directorNumber = index + 1;
 
-    // Add company documents
-    Object.keys(data).forEach((key) => {
-      if (data[key] && data[key] instanceof File) {
-        formData.append(key, data[key] as File);
-      }
-    });
-
-    // Add director documents
-    visibleDirectors.forEach((director, index) => {
-      const directorNumber = index + 1;
-
-      if (director.files.directorIdCardFront) {
-        formData.append(
-          `director_${directorNumber}_id_card_front`,
-          director.files.directorIdCardFront
-        );
-      }
-      if (director.files.directorIdCardBack) {
-        formData.append(
-          `director_${directorNumber}_id_card_back`,
-          director.files.directorIdCardBack
-        );
-      }
-      if (director.files.directorKraPin) {
-        formData.append(
-          `director_${directorNumber}_kra_pin`,
-          director.files.directorKraPin
-        );
-      }
-    });
-
-    uploadMutation.mutate(formData, {
-      onSuccess: () => {
-        toast.success("KYC documents uploaded successfully!");
+        if (director.files.directorIdCardFront) {
+          formData.append(
+            `director_${directorNumber}_id_card_front`,
+            director.files.directorIdCardFront
+          );
+        }
+        if (director.files.directorIdCardBack) {
+          formData.append(
+            `director_${directorNumber}_id_card_back`,
+            director.files.directorIdCardBack
+          );
+        }
+        if (director.files.directorKraPin) {
+          formData.append(
+            `director_${directorNumber}_kra_pin`,
+            director.files.directorKraPin
+          );
+        }
+      });
+      
+      // Submit directly to SasaPay
+      const result = await uploadKYCDocuments(companyId, formData);
+      
+      if (result.isError) {
+        // Check if business onboarding is required
+        if (result.actionRequired === "business_onboarding") {
+          toast.error(result.message, {
+            description: result.details,
+            action: {
+              label: "Complete Onboarding",
+              onClick: () => {
+                // Redirect to business onboarding page
+                window.location.href = result.redirectUrl || "/settings/company/business-onboarding";
+              }
+            }
+          });
+        } else {
+          toast.error(result.message);
+        }
+      } else {
+        toast.success("KYC documents submitted successfully!");
         onUploadSuccess?.();
         onClose();
-      },
-      onError: (error) => {
-        toast.error(error.message || "Failed to upload KYC documents");
-      },
-    });
+      }
+    } catch (error) {
+      toast.error("Failed to submit KYC documents");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleClose = () => {
-    if (!uploadMutation.isPending) {
+    if (!uploading) {
       onClose();
       form.reset();
     }
   };
-
-  // Handle successful upload
-  useEffect(() => {
-    if (uploadMutation.isSuccess) {
-      onClose();
-      form.reset();
-      // Call the success callback to refresh parent data
-      onUploadSuccess?.();
-    }
-  }, [uploadMutation.isSuccess, onClose, form, onUploadSuccess]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -644,7 +708,7 @@ export default function KYCUploadModal({
                       label={doc.label}
                       description={doc.description}
                       form={form}
-                      isPending={uploadMutation.isPending}
+                      isPending={uploading}
                     />
                   ))}
                 </div>
@@ -685,18 +749,30 @@ export default function KYCUploadModal({
                     <h5 className="font-medium text-gray-900 text-sm">
                       {director.name}
                     </h5>
-                    {directors.length > 1 && (
-                      <Button
+                    <div className="flex gap-2">
+                      {/* Debug button for director files */}
+                      <button
                         type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeDirector(director.id)}
-                        className="text-red-600 hover:text-red-700"
+                        onClick={() => {
+                          console.log(`Director ${director.id} files:`, director.files);
+                        }}
+                        className="text-xs bg-yellow-200 px-2 py-1 rounded"
                       >
-                        <X className="w-4 h-4" />
-                        Remove
-                      </Button>
-                    )}
+                        Debug
+                      </button>
+                      {directors.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeDirector(director.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                          Remove
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="gap-4 grid grid-cols-1 lg:grid-cols-3">
@@ -719,12 +795,13 @@ export default function KYCUploadModal({
                             }
                             cursor-pointer
                             ${
-                              uploadMutation.isPending
+                              uploading
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
                             }
                           `}
                           onClick={() => {
+                            console.log(`Clicked on director ${director.id} ${doc.name} upload area`);
                             const input = document.createElement("input");
                             input.type = "file";
                             input.accept = ".pdf,.jpg,.jpeg,.png";
@@ -732,6 +809,7 @@ export default function KYCUploadModal({
                               const file = (e.target as HTMLInputElement)
                                 .files?.[0];
                               if (file) {
+                                console.log(`File selected for director ${director.id} ${doc.name}:`, file.name, file.size);
                                 updateDirectorFile(director.id, doc.name, file);
                               }
                             };
@@ -748,7 +826,7 @@ export default function KYCUploadModal({
                                   File uploaded
                                 </span>
                               </div>
-                              <div className="text-gray-600 text-xs">
+                              <div className="text-gray-600 text-xs truncate max-w-full">
                                 {
                                   (
                                     director.files[
@@ -757,10 +835,14 @@ export default function KYCUploadModal({
                                   )?.name
                                 }
                               </div>
+                              <div className="text-gray-500 text-xs">
+                                Size: {((director.files[doc.name as keyof typeof director.files] as File)?.size / 1024 / 1024).toFixed(2)} MB
+                              </div>
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  console.log(`Removing file for director ${director.id} ${doc.name}`);
                                   updateDirectorFile(
                                     director.id,
                                     doc.name,
@@ -778,6 +860,9 @@ export default function KYCUploadModal({
                                 <Upload className="w-4 h-4 text-blue-500" />
                               </div>
                               <p className="text-gray-500 text-xs">
+                                Click to Upload
+                              </p>
+                              <p className="text-gray-400 text-xs">
                                 {doc.description}
                               </p>
                             </div>
@@ -804,7 +889,7 @@ export default function KYCUploadModal({
                   type="button"
                   variant="outline"
                   onClick={handleClose}
-                  disabled={uploadMutation.isPending}
+                  disabled={uploading}
                   className="px-6"
                 >
                   <X className="mr-2 w-4 h-4" />
@@ -813,12 +898,12 @@ export default function KYCUploadModal({
                 <Button
                   type="submit"
                   disabled={
-                    uploadMutation.isPending ||
+                    uploading ||
                     (!hasAnyFilesSelected && unuploadedDocuments.length === 0)
                   }
                   className="px-6"
                 >
-                  {uploadMutation.isPending ? (
+                  {uploading ? (
                     <>
                       <div className="mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4 animate-spin" />
                       Uploading...

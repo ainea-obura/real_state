@@ -64,15 +64,16 @@ interface ApiResponse<T = undefined> {
   isError: boolean;
   message?: string;
   data?: T;
+  details?: string;
+  actionRequired?: string;
+  redirectUrl?: string;
 }
 
-// Upload KYC documents for a company (all documents at once)
 export async function uploadKYCDocuments(
   companyId: string,
   formData: FormData
 ): Promise<ApiResponse<KYCCompanyDocuments>> {
   try {
-    // Get session and token
     const session = await getServerSession(authOptions);
     if (!session?.accessToken) {
       return {
@@ -81,10 +82,10 @@ export async function uploadKYCDocuments(
       };
     }
 
-    // The backend expects these specific field names for the 7 KYC documents
-    // formData should contain: cr12, proof_of_address, board_resolution, kra_pin,
-    // certificate_of_incorporation, bank_confirmation_letter, tax_compliance_certificate
-
+    // Submit directly to SasaPay (no MinIO storage)
+    console.log("Uploading KYC documents to:", `${API_BASE_URL}/documents/kyc/companies/${companyId}/upload/`);
+    console.log("FormData entries:", Array.from(formData.entries()).map(([key, value]) => [key, value instanceof File ? `${value.name} (${value.size} bytes)` : value]));
+    
     const response = await fetch(
       `${API_BASE_URL}/documents/kyc/companies/${companyId}/upload/`,
       {
@@ -96,17 +97,37 @@ export async function uploadKYCDocuments(
       }
     );
 
-    const result = await response.json();
-
-    if (!response.ok) {
+    // Check if response is JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("Non-JSON response:", text);
       return {
         isError: true,
-        message: result.message || "Failed to upload KYC documents",
+        message: `Server returned ${response.status}: ${response.statusText}. Expected JSON but got ${contentType}`,
       };
     }
 
-    // Revalidate the company data
-    revalidatePath("/", "layout");
+    const result = await response.json();
+
+    if (!response.ok) {
+      // Check if business onboarding is required
+      if (result.action_required === "business_onboarding") {
+        return {
+          isError: true,
+          message: result.message,
+          details: result.details,
+          actionRequired: "business_onboarding",
+          redirectUrl: result.redirect_url,
+        };
+      }
+      
+      return {
+        isError: true,
+        message: result.message || `Failed to upload KYC documents (${response.status})`,
+        details: result.details,
+      };
+    }
 
     return {
       isError: false,
@@ -116,13 +137,67 @@ export async function uploadKYCDocuments(
   } catch (error) {
     return {
       isError: true,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to upload KYC documents",
+      message: error instanceof Error ? error.message : "Failed to upload KYC documents",
     };
   }
 }
+// Upload KYC documents for a company (all documents at once)
+// export async function uploadKYCDocuments(
+//   companyId: string,
+//   formData: FormData
+// ): Promise<ApiResponse<KYCCompanyDocuments>> {
+//   try {
+//     // Get session and token
+//     const session = await getServerSession(authOptions);
+//     if (!session?.accessToken) {
+//       return {
+//         isError: true,
+//         message: "Authentication required",
+//       };
+//     }
+
+//     // The backend expects these specific field names for the 7 KYC documents
+//     // formData should contain: cr12, proof_of_address, board_resolution, kra_pin,
+//     // certificate_of_incorporation, bank_confirmation_letter, tax_compliance_certificate
+
+//     const response = await fetch(
+//       `${API_BASE_URL}/documents/kyc/companies/${companyId}/upload/`,
+//       {
+//         method: "POST",
+//         headers: {
+//           Authorization: `Bearer ${session.accessToken}`,
+//         },
+//         body: formData,
+//       }
+//     );
+
+//     const result = await response.json();
+
+//     if (!response.ok) {
+//       return {
+//         isError: true,
+//         message: result.message || "Failed to upload KYC documents",
+//       };
+//     }
+
+//     // Revalidate the company data
+//     revalidatePath("/", "layout");
+
+//     return {
+//       isError: false,
+//       message: "KYC documents uploaded successfully",
+//       data: result.data,
+//     };
+//   } catch (error) {
+//     return {
+//       isError: true,
+//       message:
+//         error instanceof Error
+//           ? error.message
+//           : "Failed to upload KYC documents",
+//     };
+//   }
+// }
 
 // Upload individual KYC document
 export async function uploadIndividualKYCDocument(

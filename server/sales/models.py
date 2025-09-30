@@ -1455,12 +1455,139 @@ class AssignedDocument(TimeStampedUUIDModel):
         else:
             if self.status not in ["pending", "draft"]:
                 raise ValidationError("Agreement cannot be withdrawn in current status")
-            self.status = "withdrawn"
+            self.status = "cancelled"
 
         if reason:
             self.notes += f"\n\nWithdrawal Reason: {reason}"
         self.save()
 
-    def has_pdf(self):
-        """Check if the document has a PDF file."""
-        return bool(self.document_file and self.document_file.name)
+    def get_remaining_days(self):
+        """Get the number of days remaining before due date."""
+        if not self.due_date or self.is_expired():
+            return 0
+
+        remaining = self.due_date - timezone.now().date()
+        return remaining.days
+
+    def get_property_details(self):
+        """Get formatted property details."""
+        try:
+            # Find the PROJECT ancestor by traversing up the tree
+            project_ancestor = (
+                self.property_node.get_ancestors(include_self=True)
+                .filter(node_type="PROJECT")
+                .first()
+            )
+
+            project_name = (
+                project_ancestor.name if project_ancestor else "Unknown Project"
+            )
+
+            if self.property_node.node_type == "UNIT":
+                unit_detail = getattr(self.property_node, "unit_detail", None)
+                if unit_detail:
+                    return (
+                        f"{project_name} - "
+                        f"Block {unit_detail.block} - "
+                        f"Floor {unit_detail.floor} - "
+                        f"Unit {unit_detail.unit_number}"
+                    )
+                return f"{project_name} - {self.property_node.name}"
+            else:  # HOUSE
+                villa_detail = getattr(self.property_node, "villa_detail", None)
+                if villa_detail:
+                    return f"{project_name} - {villa_detail.villa_name}"
+                return f"{project_name} - {self.property_node.name}"
+        except Exception:
+            return f"Unknown Property - {self.property_node.name}"
+
+    def get_display_status(self):
+        """Get display status based on document type and current status."""
+        if self.document_type == "offer_letter":
+            if self.status == "accepted":
+                return "accepted"
+            elif self.status == "rejected":
+                return "rejected"
+            elif self.status == "withdrawn":
+                return "withdrawn"
+            elif self.is_expired():
+                return "expired"
+            else:
+                return "active"
+        else:  # sales agreement
+            if self.status == "signed":
+                return "signed"
+            elif self.status in ["draft", "expired"]:
+                return "pending"
+            else:
+                return self.status
+
+    def get_display_date(self):
+        """Get the appropriate date to display based on status."""
+        return self.due_date
+
+    # File Management Methods
+    def has_document_file(self):
+        """Check if document has a file (generated or signed)."""
+        return bool(self.document_file)
+
+    def is_document_signed(self):
+        """Check if document has been signed."""
+        return self.is_signed
+
+    def accept_offer(self):
+        """Accept the offer letter (no file upload needed)."""
+        if not self.can_accept():
+            raise ValidationError("Offer cannot be accepted in current status")
+
+        # For offer letters, just update status (no file change)
+        self.status = "accepted"
+        self.save()
+
+    def can_upload_signed(self):
+        """Check if signed document can be uploaded."""
+        # Only contracts can have signed documents uploaded
+        if self.document_type == "offer_letter":
+            return False  # Offer letters don't get signed documents uploaded
+        else:
+            return self.status in ["pending", "draft"] and not self.is_signed
+
+    def upload_signed_document(self, file_obj):
+        """Upload a signed document (only for contracts/agreements)."""
+        if not self.can_upload_signed():
+            raise ValidationError(
+                "Only contracts can have signed documents uploaded. "
+                "Offer letters are generated and stored only."
+            )
+
+        # Replace the existing file with signed version
+        self.document_file = file_obj
+        self.is_signed = True
+        self.status = "signed"
+        self.save()
+
+    def generate_document_from_template(self):
+        """Generate document from template and store in document_file."""
+        # This method would be called when template is assigned
+        # It would:
+        # 1. Take template content
+        # 2. Replace variables with actual values
+        # 3. Generate PDF
+        # 4. Store in document_file
+        # 5. Set is_signed = False
+        pass
+
+    def get_document_workflow_type(self):
+        """Get the workflow type for this document."""
+        if self.document_type == "offer_letter":
+            return "generate_only"  # Generate and store, no upload
+        else:
+            return "generate_then_replace"  # Generate, then replace with signed
+
+    def can_download_generated(self):
+        """Check if generated document can be downloaded."""
+        return bool(self.document_file) and not self.is_signed
+
+    def can_download_signed(self):
+        """Check if signed document can be downloaded."""
+        return bool(self.document_file) and self.is_signed

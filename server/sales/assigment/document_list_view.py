@@ -39,6 +39,7 @@ class DocumentListView(generics.ListAPIView):
                 json_data=JSONObject(
                     id="id",
                     document_title="document_title",
+                    document_file="document_file",
                     document_link="document_link",
                     due_date="due_date",
                     status="status",
@@ -61,6 +62,7 @@ class DocumentListView(generics.ListAPIView):
                 json_data=JSONObject(
                     id="id",
                     document_title="document_title",
+                    document_file="document_file",
                     document_link="document_link",
                     status="status",
                     created_at="created_at",

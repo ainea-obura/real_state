@@ -343,6 +343,111 @@ export const fetchInvoiceStats = async (
   return InvoiceStatsSchema.parse(data);
 };
 
+export interface BulkInvoiceUploadData {
+  client_type: string;
+  customer_name: string;
+  invoice_date: string;
+  due_date: string;
+  invoice_type: string;
+  total_amount: number;
+  balance?: number;
+  paid_date?: string;
+  notes?: string;
+  house_no?: string;
+  project_id?: string;
+  invoice_subject?: string;
+}
+
+export interface BulkInvoiceUploadResponse {
+  error: boolean;
+  message?: string;
+  data?: {
+    count: number;
+    results: Array<{
+      row: number;
+      success: boolean;
+      data?: any;
+      error?: string;
+    }>;
+  };
+}
+
+export const bulkUploadInvoices = async (
+  data: BulkInvoiceUploadData[]
+): Promise<BulkInvoiceUploadResponse> => {
+  try {
+    const session = await getServerSession(authOptions);
+    const token = session?.accessToken;
+    
+    if (!token) {
+      return {
+        error: true,
+        message: "Authentication required",
+        data: {
+          count: 0,
+          results: [],
+        },
+      };
+    }
+
+    console.log('🚀 Frontend: Starting bulk invoice upload');
+    console.log('🚀 Frontend: Data to send:', data);
+    console.log('🚀 Frontend: Data length:', data.length);
+    console.log('🚀 Frontend: API_BASE_URL:', API_BASE_URL);
+    console.log('🚀 Frontend: Token exists:', !!token);
+    
+    const apiUrl = `${API_BASE_URL}/payments/invoices/bulk-upload`;
+    console.log('🚀 Frontend: Full API URL:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Failed to bulk upload invoices";
+      console.log('❌ Frontend: Response not OK, status:', response.status);
+      console.log('❌ Frontend: Response statusText:', response.statusText);
+      
+      try {
+        const errorData = await response.json();
+        console.log('❌ Frontend: Error data:', errorData);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        console.log('❌ Frontend: Failed to parse error response:', parseError);
+        errorMessage = response.statusText || errorMessage;
+      }
+
+      return {
+        error: true,
+        message: errorMessage,
+        data: {
+          count: 0,
+          results: [],
+        },
+      };
+    }
+
+    const responseData = await response.json();
+    console.log('✅ Frontend: Success response:', responseData);
+    return responseData;
+  } catch (error) {
+    console.error('Bulk invoice upload error:', error);
+    return {
+      error: true,
+      message: "Failed to upload invoices",
+      data: {
+        count: 0,
+        results: [],
+      },
+    };
+  }
+};
+
 export const fetchInvoiceTable = async (
   params: FetchInvoiceTableParams = {}
 ): Promise<InvoiceTableResponse> => {
@@ -367,101 +472,5 @@ export const fetchInvoiceTable = async (
   const data = await response.json();
   if (!data || typeof data !== "object" || !data.data)
     throw new Error("Invalid response from invoice table API");
-  return data.data;
-};
-
-// --- Action: fetchTenantInvoices ---
-export interface FetchTenantInvoicesParams {
-  user_id: string;
-  page?: number;
-  page_size?: number;
-}
-
-export interface TenantInvoiceResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: any[];
-}
-
-export const fetchTenantInvoices = async (
-  params: FetchTenantInvoicesParams
-): Promise<TenantInvoiceResponse> => {
-  const session = await getServerSession(authOptions);
-  const token = session?.accessToken;
-
-  if (!params.user_id) {
-    throw new Error("'user_id' parameter is required");
-  }
-
-  const searchParams = new URLSearchParams();
-  searchParams.set("user_id", params.user_id);
-  if (params.page) searchParams.set("page", params.page.toString());
-  if (params.page_size) searchParams.set("page_size", params.page_size.toString());
-
-  const response = await fetch(
-    `${API_BASE_URL}/finance/invoices/tenant-invoices?${searchParams.toString()}`,
-    {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  
-  if (!response.ok) throw new Error("Failed to fetch tenant invoices");
-  const data = await response.json();
-  if (!data || typeof data !== "object" || !data.data)
-    throw new Error("Invalid response from tenant invoices API");
-  return data.data;
-};
-
-// --- Action: fetchInvoiceDetail ---
-export interface InvoiceDetailResponse {
-  invoice: {
-    id: string;
-    invoice_number: string;
-    description: string;
-    total_amount: number;
-    balance: number;
-    status: string;
-    issue_date: string;
-    due_date: string;
-    currency: string;
-    property_name: string;
-    property_address: string;
-  };
-  payments: Array<{
-    id: string;
-    transaction_id: string;
-    amount: number;
-    payment_method: string;
-    status: string;
-    payment_date: string;
-    currency: string;
-    notes: string;
-  }>;
-}
-
-export const fetchInvoiceDetail = async (
-  invoiceId: string
-): Promise<InvoiceDetailResponse> => {
-  const session = await getServerSession(authOptions);
-  const token = session?.accessToken;
-
-  if (!invoiceId) {
-    throw new Error("'invoiceId' parameter is required");
-  }
-
-  const response = await fetch(
-    `${API_BASE_URL}/finance/invoices/${invoiceId}/detail`,
-    {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  
-  if (!response.ok) throw new Error("Failed to fetch invoice detail");
-  const data = await response.json();
-  if (!data || typeof data !== "object" || !data.data)
-    throw new Error("Invalid response from invoice detail API");
   return data.data;
 };

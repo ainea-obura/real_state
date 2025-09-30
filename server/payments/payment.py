@@ -10,14 +10,15 @@ from django.core.cache import cache
 from django.db.models import Max, Sum
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from requests.auth import HTTPBasicAuth
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import Account, Users
+from accounts.models import Users
 from payments.models import (
     InstantPaymentNotification,
     Invoice,
@@ -202,7 +203,6 @@ class RecordPaymentView(CreateAPIView):
                     invoice=invoice,
                     paid_amount=applied_amount,
                     balance=new_balance,
-                    payment_method=payment_method,  # Store the actual payment method for cash payments
                 )
                 invoice.balance = new_balance
                 if invoice.balance == 0:
@@ -232,7 +232,6 @@ class RecordPaymentView(CreateAPIView):
                     invoice=invoice,
                     paid_amount=applied_amount,
                     balance=new_balance,
-                    payment_method=payment_method,  # Store the actual payment method for paybill/buygoods
                 )
                 invoice.balance = new_balance
                 if invoice.balance == 0:
@@ -248,7 +247,7 @@ class RecordPaymentView(CreateAPIView):
                 ).update(is_verified=False)
 
             return Response(
-                {"error": False, "message": "Cash payment recorded successfully."},
+                    {"error": False, "message": "Cash payment recorded successfully."},
                 status=status.HTTP_200_OK,
             )
 
@@ -260,27 +259,13 @@ class RecordPaymentView(CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Get user phone number from Account model based on payment method
+        # Get user phone number from first invoice
         first_invoice = validated_invoices[0]["invoice"]
-        recipient_user = None
+        user_phone = ""
         if recipient_type == "tenant":
-            recipient_user = first_invoice.tenants.first().tenant_user
+            user_phone = first_invoice.tenants.first().tenant_user.phone
         else:
-            recipient_user = first_invoice.owners.first().owner_user
-
-        # Find account for this user with the specified payment method
-        try:
-            account = Account.objects.get(
-                user=recipient_user, account_code=payment_method, is_active=True
-            )
-            user_phone = account.account_number
-        except Account.DoesNotExist:
-            return Response(
-                {
-                    "error": True,
-                    "message": f"{recipient_type.title()} with this payment method doesn't have an account number/phone number.",
-                }
-            )
+            user_phone = first_invoice.owners.first().owner_user.phone
 
         # Create description for multiple invoices
         if len(validated_invoices) == 1:
@@ -334,7 +319,6 @@ class RecordPaymentView(CreateAPIView):
             response_code=payment_request["ResponseCode"],
             response_description=payment_request["ResponseDescription"],
             status="pending",
-            payment_method=payment_method,  # Store the actual payment method user selected
             invoices_data=invoices_data,
             expected_total_amount=total_amount,
             is_multiple_invoices=len(validated_invoices) > 1,
@@ -344,7 +328,6 @@ class RecordPaymentView(CreateAPIView):
         status_result = wait_for_payment_status(
             payment_request_transaction.id, timeout=60
         )
-        print("status_result", status_result)
         if status_result == "Paid":
             return Response(
                 {"error": False, "message": "Payment successful."},
@@ -353,6 +336,7 @@ class RecordPaymentView(CreateAPIView):
         elif status_result == "Failed":
             return Response(
                 {"error": True, "message": "Payment failed."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
         else:
             return Response(
@@ -461,7 +445,7 @@ class CreateCreditNoteView(CreateAPIView):
                 invoice=invoice,
                 paid_amount=-float(credit_amount),  # Negative amount for credit
                 balance=invoice.balance,
-                payment_method=payment_method,  # Store the actual payment method for credit notes
+                payment_method="credit_note",
                 notes=f"Credit note: {reason} - {description}",
             )
 
@@ -642,56 +626,6 @@ class PaymentTableListView(ListAPIView):
     serializer_class = PaymentTableItemSerializer
     pagination_class = CustomPageNumberPagination
 
-    def _getPaymentMethodName(self, payment_method):
-        """Convert payment method code to human-readable name"""
-        PAYMENT_METHOD_CHOICES = {
-            "cash": "Cash",
-            "bank_transfer": "Bank Transfer",
-            "paybill/buygoods": "PayBill/BuyGoods",
-            "credit_note": "Credit Note",
-            "00": "SasaPay",
-            "01": "KCB",
-            "02": "Standard Chartered Bank KE",
-            "03": "Absa Bank",
-            "07": "NCBA",
-            "10": "Prime Bank",
-            "11": "Cooperative Bank",
-            "12": "National Bank",
-            "14": "M-Oriental",
-            "16": "Citibank",
-            "18": "Middle East Bank",
-            "19": "Bank of Africa",
-            "23": "Consolidated Bank",
-            "25": "Credit Bank",
-            "31": "Stanbic Bank",
-            "35": "ABC Bank",
-            "36": "Choice Microfinance Bank",
-            "43": "Eco Bank",
-            "50": "Paramount Universal Bank",
-            "51": "Kingdom Bank",
-            "53": "Guaranty Bank",
-            "54": "Victoria Commercial Bank",
-            "55": "Guardian Bank",
-            "57": "I&M Bank",
-            "61": "HFC Bank",
-            "63": "DTB",
-            "65": "Mayfair Bank",
-            "66": "Sidian Bank",
-            "68": "Equity Bank",
-            "70": "Family Bank",
-            "72": "Gulf African Bank",
-            "74": "First Community Bank",
-            "75": "DIB Bank",
-            "76": "UBA",
-            "78": "KWFT Bank",
-            "89": "Stima Sacco",
-            "97": "Telcom Kenya",
-            "63902": "MPesa",
-            "63903": "AirtelMoney",
-            "63907": "T-Kash",
-        }
-        return PAYMENT_METHOD_CHOICES.get(payment_method, payment_method or "Unknown")
-
     def get_queryset(self):
         receipt_qs = Receipt.objects.select_related("invoice").all()
         from_str = self.request.query_params.get("from")
@@ -791,7 +725,7 @@ class PaymentTableListView(ListAPIView):
                     ),
                 },
                 "paymentDate": receipt.payment_date.isoformat(),
-                "paymentMethod": self._getPaymentMethodName(receipt.payment_method),  # Return human-readable name
+                "paymentMethod": "cash",  # TODO: update if you have payment method field
                 "amountPaid": format_money_with_currency(float(receipt.paid_amount)),
                 "amountPaidNoCurrency": float(receipt.paid_amount),
                 "invoicesApplied": [
@@ -823,3 +757,252 @@ class PaymentTableListView(ListAPIView):
             "results": items,
         }
         return Response({"error": False, "data": data}, status=status.HTTP_200_OK)
+
+# Update bills from paybill/till:
+@extend_schema(
+    tags=["Payments"],
+    description="Update unpaid bills for an apartment using transaction data",
+    request={
+        "type": "object",
+        "properties": {
+            "transaction_id": {"type": "string", "description": "Transaction ID from payment notification"},
+            "apartment_number": {"type": "string", "description": "Apartment number (e.g., B101, A205)"},
+            "amount": {"type": "string", "description": "Transaction amount"},
+            "payment_method": {"type": "string", "description": "Payment method used"},
+            "trans_time": {"type": "string", "description": "Transaction timestamp"},
+        },
+        "required": ["transaction_id", "apartment_number", "amount", "payment_method", "trans_time"],
+    },
+    responses={
+        200: OpenApiResponse(description="Bills updated successfully"),
+        400: OpenApiResponse(description="Invalid request data"),
+        404: OpenApiResponse(description="Apartment or unpaid bills not found"),
+        500: OpenApiResponse(description="Internal server error"),
+    },
+)
+class UpdateBillsFromTransactionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # Get request data
+            transaction_id = request.data.get("transaction_id")
+            apartment_number = request.data.get("apartment_number")
+            amount = request.data.get("amount")
+            payment_method = request.data.get("payment_method")
+            trans_time = request.data.get("trans_time")
+
+            # Validate required fields
+            if not all([transaction_id, apartment_number, amount, payment_method, trans_time]):
+                return Response(
+                    {
+                        "error": True,
+                        "message": "All fields are required: transaction_id, apartment_number, amount, payment_method, trans_time",
+                        "data": None,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Validate apartment number format - accept any alphanumeric format
+            import re
+            apartment_pattern = r"^[A-Za-z0-9]+$"
+            if not re.match(apartment_pattern, apartment_number) or not apartment_number.strip():
+                return Response(
+                    {
+                        "error": True,
+                        "message": "Invalid apartment number format. Must contain letters and/or numbers.",
+                        "data": None,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Find the apartment
+            from properties.models import LocationNode
+            apartment = LocationNode.objects.filter(
+                name__iexact=apartment_number,
+                node_type="UNIT",
+                is_deleted=False
+            ).first()
+
+            if not apartment:
+                return Response(
+                    {
+                        "error": True,
+                        "message": f"Apartment {apartment_number} not found",
+                        "data": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Find unpaid invoices for this apartment
+            unpaid_invoices = Invoice.objects.filter(
+                property=apartment,
+                status__in=["ISSUED", "PARTIAL"],
+                is_deleted=False
+            ).order_by("created_at")
+
+            if not unpaid_invoices.exists():
+                return Response(
+                    {
+                        "error": True,
+                        "message": f"No unpaid bills found for apartment {apartment_number}",
+                        "data": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Convert amount to decimal
+            from decimal import Decimal
+            try:
+                transaction_amount = Decimal(str(amount))
+            except (ValueError, TypeError):
+                return Response(
+                    {
+                        "error": True,
+                        "message": "Invalid amount format",
+                        "data": None,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+             # Map payment method to valid choice
+            payment_method_mapping = {
+                "mpesa": "63902",
+                "airtel_money": "63903", 
+                "t_kash": "63907",
+                "bank_transfer": "01",
+                "cash": "00",
+                "online": "00",
+            }
+            
+            valid_payment_method = payment_method_mapping.get(payment_method.lower(), "00")
+
+            # Process payment against unpaid invoices
+            remaining_amount = transaction_amount
+            updated_invoices = []
+            created_receipts = []
+
+            for invoice in unpaid_invoices:
+                if remaining_amount <= 0:
+                    break
+
+                # Calculate amount to apply to this invoice
+               # invoice_balance = Decimal(str(invoice.balance))
+                # Use total_amount if balance is 0 or not set
+                invoice_balance = Decimal(str(invoice.balance)) if invoice.balance > 0 else Decimal(str(invoice.total_amount))
+                amount_to_apply = min(remaining_amount, invoice_balance)
+
+                # Create receipt for this invoice
+                receipt = Receipt.objects.create(
+                    invoice=invoice,
+                    paid_amount=float(amount_to_apply),
+                    balance=float(invoice_balance - amount_to_apply),
+                    #payment_method=payment_method,
+                    payment_method=valid_payment_method,
+                    notes=f"Payment from transaction {transaction_id} for apartment {apartment_number}",
+                )
+                created_receipts.append(receipt)
+
+                # Update invoice
+                invoice.balance = float(invoice_balance - amount_to_apply)
+                if invoice.balance <= 0:
+                    invoice.status = "PAID"
+                else:
+                    invoice.status = "PARTIAL"
+                invoice.save()
+
+                updated_invoices.append({
+                    "invoice_id": str(invoice.id),
+                    "invoice_number": invoice.invoice_number,
+                    "amount_applied": float(amount_to_apply),
+                    "new_balance": float(invoice.balance),
+                    "status": invoice.status,
+                })
+
+                remaining_amount -= amount_to_apply
+
+            # Prepare response data
+            response_data = {
+                "apartment_number": apartment_number,
+                "apartment_id": str(apartment.id),
+                "transaction_id": transaction_id,
+                "total_transaction_amount": float(transaction_amount),
+                "total_applied": float(transaction_amount - remaining_amount),
+                "remaining_amount": float(remaining_amount),
+                "updated_invoices": updated_invoices,
+                "receipts_created": len(created_receipts),
+            }
+
+            return Response(
+                {
+                    "error": False,
+                    "message": f"Successfully updated {len(updated_invoices)} invoices for apartment {apartment_number}",
+                    "data": response_data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": True,
+                    "message": f"Error updating bills: {str(e)}",
+                    "data": None,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+@extend_schema(
+    tags=["Payments"],
+    description="Get all instant payment notifications (transactions)",
+    responses={
+        200: OpenApiResponse(description="Transactions retrieved successfully"),
+        500: OpenApiResponse(description="Internal server error"),
+    },
+)
+class TransactionsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # Get all instant payment notifications
+            transactions = InstantPaymentNotification.objects.all().order_by('-created_at')
+            
+            # Convert to the format expected by frontend
+            transactions_data = []
+            for transaction in transactions:
+                transactions_data.append({
+                    "id": str(transaction.id),
+                    "trans_id": transaction.trans_id,
+                    "amount": transaction.trans_amount,
+                    "payment_method": transaction.payment_method,
+                    "trans_time": transaction.trans_time,
+                    "phone_number": transaction.msisdn,
+                    "account_reference": transaction.bill_ref_number,
+                    "merchant_request_id": transaction.third_party_trans_id,
+                    "checkout_request_id": transaction.third_party_trans_id,
+                    "response_code": "0",  # Default success
+                    "response_description": "Success",
+                    "status": "completed" if transaction.is_verified else "pending",
+                    "created_at": transaction.created_at.isoformat(),
+                    "updated_at": transaction.updated_at.isoformat(),
+                })
+
+            return Response(
+                {
+                    "error": False,
+                    "message": "Transactions retrieved successfully",
+                    "data": transactions_data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": True,
+                    "message": f"Error retrieving transactions: {str(e)}",
+                    "data": None,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

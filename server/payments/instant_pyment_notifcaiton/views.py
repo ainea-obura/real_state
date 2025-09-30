@@ -18,7 +18,7 @@ class InstantPaymentNotificationView(APIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return InstantPaymentNotification.objects.filter(is_verified=False).all()
+        return InstantPaymentNotification.objects.all()
 
     def get(self, request):
         """Handle instant payment notifications from SasaPay"""
@@ -33,16 +33,16 @@ class InstantPaymentNotificationView(APIView):
                 Q(msisdn__icontains=search_query) | Q(full_name__icontains=search_query)
             )
 
-            # If no results found with search, return latest unverified transactions
+            # If no results found with search, return latest transactions
             if not filtered_queryset.exists():
                 queryset = queryset.order_by("-trans_time")[
-                    :10
-                ]  # Latest 10 transactions
+                    :50
+                ]  # Latest 50 transactions
             else:
                 queryset = filtered_queryset
         else:
-            # If no search query, return latest unverified transactions
-            queryset = queryset.order_by("-trans_time")[:10]  # Latest 10 transactions
+            # If no search query, return latest transactions
+            queryset = queryset.order_by("-trans_time")[:50]  # Latest 50 transactions
 
         # Serialize the queryset using the serializer
         serializer = InstantPaymentNotificationSerializer(queryset, many=True)

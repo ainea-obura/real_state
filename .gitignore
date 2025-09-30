@@ -186,6 +186,12 @@ $RECYCLE.BIN/
 *.lnk
 
 # ========================
+# Environment Files with Secrets
+# ========================
+docs/env-sample.txt
+.env.example
+
+# ========================
 # End of .gitignore
 # ========================
 node_modules

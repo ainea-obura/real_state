@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtom } from 'jotai';
-import { Clock, Coins, Download, Plus, Users, Grid3X3, DollarSign } from 'lucide-react';
+import { Clock, Coins, Download, Plus, Users, Grid3X3, DollarSign, CreditCard } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 import { fetchPaymentStats, fetchPaymentTable } from '@/actions/finance/payment';
@@ -28,6 +28,7 @@ import RetryPaymentModal from './components/RetryPaymentModal';
 import SendReceiptModal from './components/SendReceiptModal';
 import ViewPaymentModal from './components/ViewPaymentModal';
 import PersonPaymentsModal from './components/PersonPaymentsModal';
+import TransactionsModal from './components/TransactionsModal';
 
 // Types
 interface Payment {
@@ -106,6 +107,7 @@ const Payments = ({}: PaymentsProps) => {
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -366,6 +368,14 @@ const Payments = ({}: PaymentsProps) => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button 
+            onClick={() => setIsTransactionsModalOpen(true)} 
+            variant="outline" 
+            size="sm"
+          >
+            <CreditCard className="mr-2 w-4 h-4" />
+            View Transactions
+          </Button>
           <PermissionGate codename="add_collections" showFallback={false}>
             <Button onClick={handleCreatePayment} size="sm">
               <Plus className="mr-2 w-4 h-4" />
@@ -455,6 +465,11 @@ const Payments = ({}: PaymentsProps) => {
       </div>
 
       {/* Modals (unchanged) */}
+      <TransactionsModal
+        open={isTransactionsModalOpen}
+        onClose={() => setIsTransactionsModalOpen(false)}
+      />
+
       <PermissionGate codename="add_collections" showFallback={false}>
         <CreatePaymentModal
           open={isCreateModalOpen}

@@ -546,10 +546,10 @@ export default function CreateContractModal({
         return (
           <div className="space-y-6">
             {/* Two Column Layout for Dropdowns */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="gap-6 grid grid-cols-2">
               {/* First Column - Offer Letter Selection */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="font-medium text-gray-700 text-sm">
                   Select Offer Letter *
                 </Label>
 
@@ -579,7 +579,7 @@ export default function CreateContractModal({
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {isLoadingOfferLetters ? (
-                      <div className="p-4 text-center text-gray-500">
+                      <div className="p-4 text-gray-500 text-center">
                         <Loader2 className="mx-auto mb-2 w-6 h-6 animate-spin" />
                         <p>Loading offer letters...</p>
                       </div>
@@ -589,7 +589,7 @@ export default function CreateContractModal({
                         <SelectItem
                           key={offerLetter.id}
                           value={offerLetter.id}
-                          className="cursor-pointer hover:bg-gray-100"
+                          className="hover:bg-gray-100 cursor-pointer"
                         >
                           <div className="flex items-center space-x-2">
                             <FileText className="w-4 h-4 text-blue-500" />
@@ -597,7 +597,7 @@ export default function CreateContractModal({
                               <span className="font-medium">
                                 {offerLetter.document_title}
                               </span>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-gray-500 text-xs">
                                 {offerLetter.buyer_name} -{" "}
                                 {offerLetter.property_name}
                               </span>
@@ -606,7 +606,7 @@ export default function CreateContractModal({
                         </SelectItem>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-500">
+                      <div className="p-4 text-gray-500 text-center">
                         <FileText className="mx-auto mb-2 w-6 h-6 text-gray-400" />
                         <p>No offer letters found</p>
                         <p className="mt-1 text-xs">
@@ -622,13 +622,13 @@ export default function CreateContractModal({
                 </Select>
 
                 {errors.offerLetterId && (
-                  <p className="mt-1 text-xs text-red-500">
+                  <p className="mt-1 text-red-500 text-xs">
                     {errors.offerLetterId.message}
                   </p>
                 )}
 
                 {/* Help Text */}
-                <p className="text-xs text-gray-500">
+                <p className="text-gray-500 text-xs">
                   Select an existing offer letter to convert to a contract. The
                   offer details will be automatically populated.
                 </p>
@@ -636,7 +636,7 @@ export default function CreateContractModal({
 
               {/* Second Column - Contract Template Selection */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="font-medium text-gray-700 text-sm">
                   Contract Template *
                 </Label>
 
@@ -655,7 +655,7 @@ export default function CreateContractModal({
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {isLoadingTemplates ? (
-                      <div className="p-4 text-center text-gray-500">
+                      <div className="p-4 text-gray-500 text-center">
                         <Loader2 className="mx-auto mb-2 w-6 h-6 animate-spin" />
                         <p>Loading templates...</p>
                       </div>
@@ -664,7 +664,7 @@ export default function CreateContractModal({
                         <SelectItem
                           key={template.id}
                           value={template.id}
-                          className="cursor-pointer hover:bg-gray-100"
+                          className="hover:bg-gray-100 cursor-pointer"
                         >
                           <div className="flex items-center space-x-2">
                             <FileText className="w-4 h-4 text-blue-500" />
@@ -673,7 +673,7 @@ export default function CreateContractModal({
                         </SelectItem>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-500">
+                      <div className="p-4 text-gray-500 text-center">
                         <FileText className="mx-auto mb-2 w-6 h-6 text-gray-400" />
                         <p>No contract templates found</p>
                         <p className="mt-1 text-xs">
@@ -685,13 +685,13 @@ export default function CreateContractModal({
                 </Select>
 
                 {errors.templateId && (
-                  <p className="mt-1 text-xs text-red-500">
+                  <p className="mt-1 text-red-500 text-xs">
                     {errors.templateId.message}
                   </p>
                 )}
 
                 {/* Help Text */}
-                <p className="text-xs text-gray-500">
+                <p className="text-gray-500 text-xs">
                   Select a template to generate the contract. Templates define
                   the structure and content.
                 </p>
@@ -713,11 +713,11 @@ export default function CreateContractModal({
 
             {/* Selected Offer Letter Details - Below Notes */}
             {selectedOfferLetterDetails && (
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h5 className="mb-3 text-sm font-medium text-blue-900">
+              <div className="bg-blue-50 p-4 border border-blue-200 rounded-lg">
+                <h5 className="mb-3 font-medium text-blue-900 text-sm">
                   Offer Letter Details
                 </h5>
-                <div className="space-y-2 text-xs text-blue-800">
+                <div className="space-y-2 text-blue-800 text-xs">
                   <div className="flex justify-between">
                     <span>Price:</span>
                     <span className="font-medium">
@@ -739,10 +739,10 @@ export default function CreateContractModal({
                 </div>
 
                 {/* Status Update Info */}
-                <div className="pt-3 mt-3 border-t border-blue-200">
+                <div className="mt-3 pt-3 border-t border-blue-200">
                   <div className="flex items-center space-x-2 text-blue-700">
                     <CheckCircle2 className="w-4 h-4" />
-                    <span className="text-xs font-medium">
+                    <span className="font-medium text-xs">
                       When you create this contract, the offer letter status
                       will be automatically updated to "Accepted"
                     </span>
@@ -757,30 +757,30 @@ export default function CreateContractModal({
           <div className="space-y-6">
             {/* Header Section */}
             <div className="space-y-2 text-center">
-              <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full">
+              <div className="flex justify-center items-center bg-gradient-to-br from-green-400 to-green-600 mx-auto mb-4 rounded-full w-16 h-16">
                 <FileText className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="font-bold text-gray-900 text-2xl">
                 Review Contract
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-gray-600 text-sm">
                 Please review all details before creating the contract
               </p>
             </div>
 
             {/* Main Summary Cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
               {/* Project & Property Details */}
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-                <div className="flex items-center mb-4 space-x-3">
-                  <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-lg">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 border border-blue-200 rounded-xl">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex justify-center items-center bg-blue-100 rounded-lg w-10 h-10">
                     <Building2 className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-blue-900">
+                    <h4 className="font-semibold text-blue-900 text-lg">
                       Project Details
                     </h4>
-                    <p className="text-sm text-blue-600">
+                    <p className="text-blue-600 text-sm">
                       Property Information
                     </p>
                   </div>
@@ -817,21 +817,21 @@ export default function CreateContractModal({
               </div>
 
               {/* Buyer Details */}
-              <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-                <div className="flex items-center mb-4 space-x-3">
-                  <div className="flex justify-center items-center w-10 h-10 bg-purple-100 rounded-lg">
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 border border-purple-200 rounded-xl">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex justify-center items-center bg-purple-100 rounded-lg w-10 h-10">
                     <Users className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-purple-900">
+                    <h4 className="font-semibold text-purple-900 text-lg">
                       Buyer Information
                     </h4>
-                    <p className="text-sm text-purple-600">Client Details</p>
+                    <p className="text-purple-600 text-sm">Client Details</p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-purple-100">
+                  <div className="flex justify-between items-center py-2 border-purple-100 border-b">
                     <span className="font-medium text-purple-700">Buyers</span>
                     <span className="font-semibold text-purple-900">
                       {selectedBuyers.length} selected
@@ -853,50 +853,50 @@ export default function CreateContractModal({
             </div>
 
             {/* Offer Letter Summary Card */}
-            <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-              <div className="flex items-center mb-4 space-x-3">
-                <div className="flex justify-center items-center w-10 h-10 bg-green-100 rounded-lg">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 border border-green-200 rounded-xl">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="flex justify-center items-center bg-green-100 rounded-lg w-10 h-10">
                   <FileText className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-green-900">
+                  <h4 className="font-semibold text-green-900 text-lg">
                     Offer Letter Summary
                   </h4>
-                  <p className="text-sm text-green-600">
+                  <p className="text-green-600 text-sm">
                     Details from selected offer letter
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-green-100">
+                <div className="flex justify-between items-center py-2 border-green-100 border-b">
                   <span className="font-medium text-green-700">
                     Offer Letter
                   </span>
-                  <span className="text-lg font-bold text-green-900">
+                  <span className="font-bold text-green-900 text-lg">
                     {selectedOfferLetterDetails?.document_title ||
                       "Not selected"}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center py-2 border-b border-green-100">
+                <div className="flex justify-between items-center py-2 border-green-100 border-b">
                   <span className="font-medium text-green-700">Buyer</span>
-                  <span className="text-lg font-bold text-green-900">
+                  <span className="font-bold text-green-900 text-lg">
                     {selectedOfferLetterDetails?.buyer_name || "Not selected"}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center py-2 border-b border-green-100">
+                <div className="flex justify-between items-center py-2 border-green-100 border-b">
                   <span className="font-medium text-green-700">Property</span>
-                  <span className="text-lg font-bold text-green-900">
+                  <span className="font-bold text-green-900 text-lg">
                     {selectedOfferLetterDetails?.property_name ||
                       "Not selected"}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center py-2 border-b border-green-100">
+                <div className="flex justify-between items-center py-2 border-green-100 border-b">
                   <span className="font-medium text-green-700">Project</span>
-                  <span className="text-lg font-bold text-green-900">
+                  <span className="font-bold text-green-900 text-lg">
                     {selectedOfferLetterDetails?.project_name || "Not selected"}
                   </span>
                 </div>
@@ -905,7 +905,7 @@ export default function CreateContractModal({
                   <span className="font-medium text-green-700">
                     Contract Template
                   </span>
-                  <span className="text-lg font-bold text-green-900">
+                  <span className="font-bold text-green-900 text-lg">
                     {templatesData?.data?.results?.find(
                       (t) => t.id === form.watch("templateId")
                     )?.name || "Not selected"}
@@ -916,23 +916,23 @@ export default function CreateContractModal({
 
             {/* Notes Section (if exists) */}
             {form.watch("notes") && (
-              <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-                <div className="flex items-center mb-4 space-x-3">
-                  <div className="flex justify-center items-center w-10 h-10 bg-amber-100 rounded-lg">
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 border border-amber-200 rounded-xl">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex justify-center items-center bg-amber-100 rounded-lg w-10 h-10">
                     <FileText className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-amber-900">
+                    <h4 className="font-semibold text-amber-900 text-lg">
                       Additional Notes
                     </h4>
-                    <p className="text-sm text-amber-600">
+                    <p className="text-amber-600 text-sm">
                       Special Instructions
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border border-amber-100 bg-white/60">
-                  <p className="text-sm leading-relaxed text-amber-900">
+                <div className="bg-white/60 p-4 border border-amber-100 rounded-lg">
+                  <p className="text-amber-900 text-sm leading-relaxed">
                     {form.watch("notes")}
                   </p>
                 </div>
@@ -952,10 +952,10 @@ export default function CreateContractModal({
       <DialogContent className="mt-10 p-0 min-w-4xl h-[calc(100vh-100px)] overflow-y-hidden">
         <Form {...form}>
           <DialogHeader className="flex flex-col flex-shrink-0 items-start px-4 py-2 border-b h-[140px]">
-            <DialogTitle className="text-base font-semibold text-gray-900">
+            <DialogTitle className="font-semibold text-gray-900 text-base">
               Create Contract
             </DialogTitle>
-            <p className="mb-1 text-xs text-gray-600">
+            <p className="mb-1 text-gray-600 text-xs">
               Step {currentStep} of {steps.length}
             </p>
             {/* Stepper */}

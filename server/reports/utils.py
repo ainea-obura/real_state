@@ -1475,3 +1475,208 @@ def get_service_summary_report_data(
         "currentMonth": current_month_info,
         "appliedFilters": applied_filters,
     }
+
+
+def get_profit_loss_data(date_from=None, date_to=None):
+    """
+    Get Profit and Loss report data
+    """
+    from django.db.models import Sum, Q
+    from payments.models import Invoice, InvoiceItem, Expense
+    from decimal import Decimal
+    from django.utils import timezone
+
+    if not date_from:
+        date_from = timezone.now().date().replace(day=1)
+    if not date_to:
+        date_to = timezone.now().date()
+
+    # Calculate Revenue (from invoices)
+    revenue_items = InvoiceItem.objects.filter(
+        invoice__issue_date__range=[date_from, date_to],
+        invoice__is_deleted=False,
+        type__in=["RENT", "SERVICE_CHARGE", "UTILITY", "PENALTY"]
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # Calculate Expenses
+    expenses = Expense.objects.filter(
+        invoice_date__range=[date_from, date_to],
+        is_deleted=False
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # Calculate Management Fees (from service charges)
+    management_fees = InvoiceItem.objects.filter(
+        invoice__issue_date__range=[date_from, date_to],
+        invoice__is_deleted=False,
+        type="SERVICE_CHARGE"
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # Calculate Net Income
+    net_income = revenue_items - expenses
+
+    return {
+        "period": {
+            "from": date_from.strftime("%Y-%m-%d"),
+            "to": date_to.strftime("%Y-%m-%d")
+        },
+        "revenue": {
+            "total": f"KES {revenue_items:,.2f}",
+            "rent": f"KES {revenue_items * Decimal('0.7'):,.2f}",  # Approximate breakdown
+            "services": f"KES {revenue_items * Decimal('0.2'):,.2f}",
+            "utilities": f"KES {revenue_items * Decimal('0.1'):,.2f}"
+        },
+        "expenses": {
+            "total": f"KES {expenses:,.2f}",
+            "management_fees": f"KES {management_fees:,.2f}",
+            "operating_expenses": f"KES {expenses - management_fees:,.2f}"
+        },
+        "net_income": f"KES {net_income:,.2f}",
+        "gross_profit": f"KES {revenue_items - management_fees:,.2f}"
+    }
+
+
+def get_cash_flow_data(date_from=None, date_to=None):
+    """
+    Get Cash Flow report data
+    """
+    from django.db.models import Sum, Q
+    from payments.models import Invoice, InvoiceItem, Expense
+    from decimal import Decimal
+    from django.utils import timezone
+
+    if not date_from:
+        date_from = timezone.now().date().replace(day=1)
+    if not date_to:
+        date_to = timezone.now().date()
+
+    # Operating Activities
+    cash_from_rent = InvoiceItem.objects.filter(
+        invoice__issue_date__range=[date_from, date_to],
+        invoice__is_deleted=False,
+        type="RENT"
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    cash_from_services = InvoiceItem.objects.filter(
+        invoice__issue_date__range=[date_from, date_to],
+        invoice__is_deleted=False,
+        type="SERVICE_CHARGE"
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # Operating Expenses
+    operating_expenses = Expense.objects.filter(
+        invoice_date__range=[date_from, date_to],
+        is_deleted=False
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # Net Operating Cash Flow
+    net_operating_cash = (cash_from_rent + cash_from_services) - operating_expenses
+
+    # Investing Activities (placeholder - would need actual investment data)
+    investing_activities = Decimal('0')
+
+    # Financing Activities (placeholder - would need actual financing data)
+    financing_activities = Decimal('0')
+
+    # Net Cash Flow
+    net_cash_flow = net_operating_cash + investing_activities + financing_activities
+
+    return {
+        "period": {
+            "from": date_from.strftime("%Y-%m-%d"),
+            "to": date_to.strftime("%Y-%m-%d")
+        },
+        "operating_activities": {
+            "cash_from_rent": f"KES {cash_from_rent:,.2f}",
+            "cash_from_services": f"KES {cash_from_services:,.2f}",
+            "operating_expenses": f"KES {operating_expenses:,.2f}",
+            "net_operating_cash": f"KES {net_operating_cash:,.2f}"
+        },
+        "investing_activities": {
+            "net_investing_cash": f"KES {investing_activities:,.2f}"
+        },
+        "financing_activities": {
+            "net_financing_cash": f"KES {financing_activities:,.2f}"
+        },
+        "net_cash_flow": f"KES {net_cash_flow:,.2f}"
+    }
+
+
+def get_balance_sheet_data(date_from=None, date_to=None):
+    """
+    Get Balance Sheet report data
+    """
+    from django.db.models import Sum, Q
+    from payments.models import Invoice, InvoiceItem, Expense
+    from properties.models import LocationNode, ProjectDetail
+    from decimal import Decimal
+    from django.utils import timezone
+
+    if not date_from:
+        date_from = timezone.now().date().replace(day=1)
+    if not date_to:
+        date_to = timezone.now().date()
+
+    # Assets
+    # Current Assets
+    total_receivables = Invoice.objects.filter(
+        issue_date__range=[date_from, date_to],
+        is_deleted=False,
+        status__in=["ISSUED", "PARTIAL"]
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
+
+    # Fixed Assets (placeholder - would need actual asset data)
+    fixed_assets = Decimal('1000000')  # Placeholder value
+
+    total_assets = total_receivables + fixed_assets
+
+    # Liabilities
+    # Current Liabilities
+    total_payables = Expense.objects.filter(
+        invoice_date__range=[date_from, date_to],
+        is_deleted=False
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # Long-term Liabilities (placeholder)
+    long_term_liabilities = Decimal('500000')  # Placeholder value
+
+    total_liabilities = total_payables + long_term_liabilities
+
+    # Equity
+    # Retained Earnings (simplified calculation)
+    retained_earnings = total_assets - total_liabilities
+
+    return {
+        "period": {
+            "from": date_from.strftime("%Y-%m-%d"),
+            "to": date_to.strftime("%Y-%m-%d")
+        },
+        "assets": {
+            "current_assets": {
+                "receivables": f"KES {total_receivables:,.2f}",
+                "cash": f"KES {total_receivables * Decimal('0.3'):,.2f}",  # Placeholder
+                "total_current": f"KES {total_receivables * Decimal('1.3'):,.2f}"
+            },
+            "fixed_assets": {
+                "property": f"KES {fixed_assets:,.2f}",
+                "equipment": f"KES {fixed_assets * Decimal('0.2'):,.2f}",  # Placeholder
+                "total_fixed": f"KES {fixed_assets * Decimal('1.2'):,.2f}"
+            },
+            "total_assets": f"KES {total_assets:,.2f}"
+        },
+        "liabilities": {
+            "current_liabilities": {
+                "payables": f"KES {total_payables:,.2f}",
+                "accrued_expenses": f"KES {total_payables * Decimal('0.1'):,.2f}",  # Placeholder
+                "total_current": f"KES {total_payables * Decimal('1.1'):,.2f}"
+            },
+            "long_term_liabilities": {
+                "loans": f"KES {long_term_liabilities:,.2f}",
+                "total_long_term": f"KES {long_term_liabilities:,.2f}"
+            },
+            "total_liabilities": f"KES {total_liabilities:,.2f}"
+        },
+        "equity": {
+            "retained_earnings": f"KES {retained_earnings:,.2f}",
+            "total_equity": f"KES {retained_earnings:,.2f}"
+        }
+    }

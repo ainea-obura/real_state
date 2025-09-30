@@ -52,7 +52,7 @@ export async function fetchFeatureCards(
     if (projectId) queryParams.append("project_id", projectId);
 
     const queryString = queryParams.toString();
-    const url = `${API_BASE_URL}/sales/dashboard/feature-cards-new/${queryString ? `?${queryString}` : ""}`;
+    const url = `${API_BASE_URL}/sales/dashboard/feature-cards/${queryString ? `?${queryString}` : ""}`;
 
     // Make API request
     const response = await fetch(url, {

@@ -1,16 +1,13 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.db.models import Count, Max, Min, Q, Sum
 from rest_framework import serializers
 
-from accounts.models import Users, UserVerification
-from payments.models import Invoice, Payout, Receipt
+from accounts.models import Users
+from payments.models import Invoice, Payout
 from properties.models import (
     LocationNode,
-    MaintenanceRequest,
     Media,
     ProjectDetail,
     PropertyOwner,
@@ -19,9 +16,11 @@ from properties.models import (
     Service,
     UnitDetail,
     VillaDetail,
+    MaintenanceRequest,
 )
-from utils.currency import get_serialized_default_currency
 from utils.format import RobustDateTimeField, format_money_with_currency
+from utils.currency import get_serialized_default_currency
+from accounts.models import UserVerification
 
 
 class TenantSerializer(serializers.ModelSerializer):
@@ -51,6 +50,8 @@ class TenantSerializer(serializers.ModelSerializer):
             attrs["email"] = None
         # Validate email format if provided
         elif "email" in attrs and attrs["email"]:
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
             try:
                 validate_email(attrs["email"])
             except ValidationError:
@@ -92,6 +93,8 @@ class OwnerSerializer(serializers.ModelSerializer):
             attrs["email"] = None
         # Validate email format if provided
         elif "email" in attrs and attrs["email"]:
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
             try:
                 validate_email(attrs["email"])
             except ValidationError:
@@ -171,6 +174,8 @@ class OwnerRetrieveSerializer(serializers.ModelSerializer):
             status__in=["ISSUED", "OVERDUE", "PARTIAL"],
             is_deleted=False,
         )
+
+        from payments.models import Receipt
 
         now = datetime.now()
         current_month = now.month
@@ -380,7 +385,12 @@ class PropertyOwnerIncomeDetailSerializer(serializers.ModelSerializer):
         fields = []  # Not used, as we override to_representation
 
     def to_representation(self, obj):
+        from payments.models import Payout
+        from datetime import datetime, timedelta
+        from django.db.models import Sum
+        from decimal import Decimal
         import calendar
+        from utils.currency import get_serialized_default_currency
 
         now = datetime.now()
         owner = obj
@@ -494,6 +504,10 @@ class OwnerInvoiceSerializer(serializers.ModelSerializer):
         return str(obj.property) if obj.property else None
 
     def get_receipts(self, obj):
+        from payments.models import Receipt
+        from datetime import datetime
+        from utils.format import RobustDateTimeField, format_money_with_currency
+        from utils.currency import get_serialized_default_currency
 
         now = datetime.now()
         current_month = now.month
@@ -521,6 +535,11 @@ class OwnerInvoiceSerializer(serializers.ModelSerializer):
         ]
 
     def get_balance(self, obj):
+        from payments.models import Receipt
+        from datetime import datetime
+        from decimal import Decimal
+        from utils.format import format_money_with_currency
+        from utils.currency import get_serialized_default_currency
 
         now = datetime.now()
         current_month = now.month
@@ -538,6 +557,8 @@ class OwnerInvoiceSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        from utils.format import format_money_with_currency
+        from utils.currency import get_serialized_default_currency
 
         currency = get_serialized_default_currency()
         data["total_amount"] = format_money_with_currency(
@@ -556,6 +577,11 @@ class OwnerInvoiceSummarySerializer(serializers.Serializer):
     def to_representation(self, instance):
         owner = instance["owner"]
         currency = instance["currency"]
+        from utils.format import format_money_with_currency
+        from decimal import Decimal
+        from django.db.models import Sum
+        from payments.models import Receipt
+        from datetime import datetime
 
         now = datetime.now()
         current_month = now.month
@@ -828,6 +854,8 @@ class ProjectOwnerAssignSerializer(serializers.ModelSerializer):
 
         # Validate owner exists and is an owner type
         try:
+            from accounts.models import Users
+
             owner = Users.objects.get(id=owner_id, type="owner", is_deleted=False)
             attrs["owner"] = owner
         except Users.DoesNotExist:
@@ -842,6 +870,8 @@ class ProjectOwnerAssignSerializer(serializers.ModelSerializer):
 
         # Validate project exists and get its location node
         try:
+            from properties.models import ProjectDetail
+
             project = ProjectDetail.objects.get(id=project_detail_id, is_deleted=False)
             project_node = project.node
             attrs["project"] = project
@@ -1099,6 +1129,8 @@ class AgencySerializer(serializers.ModelSerializer):
             attrs["email"] = None
         # Validate email format if provided
         elif "email" in attrs and attrs["email"]:
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
             try:
                 validate_email(attrs["email"])
             except ValidationError:

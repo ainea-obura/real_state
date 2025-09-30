@@ -154,7 +154,7 @@ export function ServicesReport({
             <div className="flex justify-center items-center gap-2 mb-1">
               <div className="bg-primary rounded-full w-2 h-2 animate-pulse"></div>
               <p className="font-bold text-primary text-2xl">
-                {new Date().toLocaleString('default', { month: 'long' })}
+                {new Date().toLocaleString('en-US', { month: 'long' })}
               </p>
             </div>
             <p className="text-muted-foreground text-sm">Current Month</p>

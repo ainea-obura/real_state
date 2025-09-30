@@ -29,10 +29,6 @@ def invoice_pdf_upload_path(instance, filename):
 
 
 PAYMENT_METHOD_CHOICES = [
-    ("cash", "Cash"),
-    ("bank_transfer", "Bank Transfer"),
-    ("paybill/buygoods", "PayBill/BuyGoods"),
-    ("credit_note", "Credit Note"),
     ("00", "SasaPay"),
     ("01", "KCB"),
     ("02", "Standard Chartered Bank KE"),
@@ -438,7 +434,7 @@ class Receipt(TimeStampedUUIDModel):
         max_length=20,
         choices=PAYMENT_METHOD_CHOICES,
         default="bank_transfer",
-        help_text="Payment method used for this receipt",
+        help_text="Payment method for this payout",
     )
 
     class Meta:
@@ -854,12 +850,6 @@ class PaymentRequestTransactions(TimeStampedUUIDModel):
     )
     is_multiple_invoices = models.BooleanField(
         default=False, help_text="Whether this transaction involves multiple invoices"
-    )
-    payment_method = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text="Payment method used for this transaction (e.g., MPesa, Equity Bank, cash)",
     )
 
     class Meta:

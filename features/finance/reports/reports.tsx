@@ -10,6 +10,9 @@ import { useQuery } from "@tanstack/react-query";
 import { EnhancedSummaryCards } from "./components/EnhancedSummaryCards";
 import { PerUnitSummaryReport } from "./components/PerUnitSummaryReport";
 import { ServiceSummaryReport } from "./components/ServiceSummaryReport";
+import { ProfitLossReportCard } from "./components/ProfitLossReportCard";
+import { CashFlowReportCard } from "./components/CashFlowReportCard";
+import { BalanceSheetReportCard } from "./components/BalanceSheetReportCard";
 
 export default function ReportsPage() {
   const [dateRange, setDateRange] = useState<{ from: Date; to?: Date }>({
@@ -69,6 +72,18 @@ export default function ReportsPage() {
       {/* Service Summary Report */}
       <ServiceSummaryReport />
 
+      {/* Financial Reports Section */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Financial Reports
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <ProfitLossReportCard dateRange={dateRange} />
+          <CashFlowReportCard dateRange={dateRange} />
+          <BalanceSheetReportCard dateRange={dateRange} />
+        </div>
+      </div>
+
       {/* Per Unit Summary Report - hidden for now */}
       {/* <PerUnitSummaryReport
         units={perUnitSummary?.units || []}
@@ -86,7 +101,7 @@ export default function ReportsPage() {
       {/* Footer */}
       <div className="pt-8 mt-12 text-sm text-center border-t text-muted-foreground">
         <p>
-          Report generated on {new Date().toLocaleDateString()} • Trait Property
+          Report generated on {new Date().toLocaleDateString("en-US")} • Trait Property
           Management Ltd
         </p>
       </div>

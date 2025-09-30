@@ -23,8 +23,8 @@ from .reports.sales_team_performance_views import SalesTeamPerformanceReportView
 from .reports.financial_collections_views import FinancialCollectionsReportView
 from .reports.outstanding_payments_views import OutstandingPaymentsReportView
 from .reports.agent_payouts_views import AgentPayoutsReportView
-from .dashboads import views as dashboard_views
-from .dashboads import urls as dashboard_urls
+from .reports.sales_summary_views import SalesSummaryReportView, SalesFinancialStatementView
+from .commission_views import CommissionCalculationView, DownPaymentTrackingView, CommissionManagementView
 
 # URL patterns for sales module - complete wizard flow
 urlpatterns = [
@@ -53,12 +53,6 @@ urlpatterns = [
         "dashboard/feature-cards/",
         FeatureCardView.as_view(),
         name="get-feature-cards",
-    ),
-    # New Dashboard Feature Cards API
-    path(
-        "dashboard/feature-cards-new/",
-        dashboard_views.FeatureCardsView.as_view(),
-        name="get-feature-cards-new",
     ),
     # Dashboard API - Complete dashboard data
     path(
@@ -162,7 +156,32 @@ urlpatterns = [
         AgentPayoutsReportView.as_view(),
         name="agent-payouts-report",
     ),
+    # Reports API - Sales Summary (Apartment Status + Financial)
+    path(
+        "reports/sales-summary/",
+        SalesSummaryReportView.as_view(),
+        name="sales-summary-report",
+    ),
+    # Reports API - Sales Financial Statement
+    path(
+        "reports/sales-financial/",
+        SalesFinancialStatementView.as_view(),
+        name="sales-financial-report",
+    ),
+    # Commission Management APIs
+    path(
+        "commission/calculate/",
+        CommissionCalculationView.as_view(),
+        name="commission-calculate",
+    ),
+    path(
+        "commission/down-payment-tracking/",
+        DownPaymentTrackingView.as_view(),
+        name="down-payment-tracking",
+    ),
+    path(
+        "commission/management/",
+        CommissionManagementView.as_view(),
+        name="commission-management",
+    ),
 ]
-
-# Include dashboards URLs
-urlpatterns += dashboard_urls.urlpatterns

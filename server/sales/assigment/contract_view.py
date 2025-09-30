@@ -4,9 +4,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from django.utils import timezone
-from django.core.files.base import ContentFile
-from jinja2 import Template as JinjaTemplate
-from weasyprint import HTML
 
 from sales.models import AssignedDocument
 from documents.models import ContractTemplate
@@ -14,64 +11,12 @@ from .contract_serializer import (
     ContractCreateRequestSerializer,
     ContractCreateResponseSerializer,
 )
-from utils.format import format_money_with_currency
 
 
 class ContractCreateView(APIView):
     """API view for creating contracts from offer letters"""
 
     permission_classes = [IsAuthenticated]
-
-    def generate_contract_pdf(self, contract, template):
-        """Generate PDF for contract using WeasyPrint"""
-        try:
-            # Build context variables
-            context = {
-                "buyer_full_name": contract.buyer.get_full_name(),
-                "buyer_email": contract.buyer.email,
-                "buyer_phone": contract.buyer.phone,
-                "property_name": contract.property_node.name,
-                "project_name": self.get_project_name(contract.property_node),
-                "contract_price": format_money_with_currency(contract.price),
-                "down_payment": format_money_with_currency(contract.down_payment),
-                "down_payment_percentage": f"{contract.down_payment_percentage:.1f}%",
-                "due_date": contract.due_date.strftime("%B %d, %Y") if contract.due_date else "Not specified",
-                "contract_date": contract.created_at.strftime("%B %d, %Y"),
-                "notes": contract.notes or "",
-                "document_type": "Sales Agreement",
-                "document_title": contract.document_title,
-                "contract_id": str(contract.id),
-                "offer_letter_id": str(contract.related_document.id) if contract.related_document else "N/A",
-            }
-            
-            # Add any custom variable values
-            if contract.variable_values:
-                context.update(contract.variable_values)
-            
-            # Render template with Jinja2
-            jinja_template = JinjaTemplate(template.template_content)
-            generated_html = jinja_template.render(**context)
-            
-            # Generate PDF with WeasyPrint
-            pdf_bytes = HTML(string=generated_html).write_pdf()
-            
-            return pdf_bytes
-            
-        except Exception as e:
-            print(f"Error generating PDF for contract: {e}")
-            return None
-
-    def get_project_name(self, property_node):
-        """Get project name by traversing up the tree"""
-        try:
-            project_ancestor = (
-                property_node.get_ancestors(include_self=True)
-                .filter(node_type="PROJECT")
-                .first()
-            )
-            return project_ancestor.name if project_ancestor else "Unknown Project"
-        except Exception:
-            return "Unknown Project"
 
     @extend_schema(
         tags=["Sales - Contracts"],
@@ -197,22 +142,6 @@ class ContractCreateView(APIView):
                 notes=notes,
             )
 
-            # Generate PDF for the contract
-            try:
-                pdf_bytes = self.generate_contract_pdf(contract, template)
-                
-                if pdf_bytes:
-                    # Save PDF to document_file field
-                    filename = f"contract_{contract.property_node.name}_{contract.buyer.get_full_name().replace(' ', '_')}.pdf"
-                    contract.document_file.save(filename, ContentFile(pdf_bytes), save=False)
-                    contract.save()  # Save to persist the PDF file reference
-                    print(f"PDF generated successfully for contract {contract.id}")
-                else:
-                    print(f"Failed to generate PDF for contract {contract.id}")
-            except Exception as e:
-                print(f"Error generating PDF for contract {contract.id}: {str(e)}")
-                # Continue without PDF - contract will still be created
-
             # Generate document content from template (placeholder for now)
             # contract.generate_document_from_template()
 
@@ -230,78 +159,18 @@ class ContractCreateView(APIView):
 
         except AssignedDocument.DoesNotExist:
             return Response(
-                {
-                    "success": False,
-                    "message": "Offer letter not found",
-                },
+                {"success": False, "message": "Offer letter not found"},
                 status=status.HTTP_404_NOT_FOUND,
-            )
-        except ContractTemplate.DoesNotExist:
-            return Response(
-                {
-                    "success": False,
-                    "message": "Contract template not found",
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception as e:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"Error creating contract: {str(e)}",
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    def put(self, request):
-        """Regenerate PDF for existing contract"""
-        try:
-            contract_id = request.data.get('contract_id')
-            if not contract_id:
-                return Response(
-                    {"success": False, "message": "contract_id is required"},
-                    status=400
-                )
-            
-            # Get the contract
-            contract = AssignedDocument.objects.get(
-                id=contract_id,
-                document_type="sales_agreement"
-            )
-            
-            # Check if it already has a PDF
-            if contract.document_file:
-                return Response(
-                    {"success": True, "message": "PDF already exists", "url": contract.document_file.url},
-                    status=200
-                )
-            
-            # Generate PDF using the template
-            pdf_bytes = self.generate_contract_pdf(contract, contract.template)
-            
-            if pdf_bytes:
-                # Save PDF to document_file field
-                filename = f"contract_{contract.property_node.name}_{contract.buyer.get_full_name().replace(' ', '_')}.pdf"
-                contract.document_file.save(filename, ContentFile(pdf_bytes), save=False)
-                contract.save()
-                
-                return Response(
-                    {"success": True, "message": "PDF generated successfully", "url": contract.document_file.url},
-                    status=200
-                )
-            else:
-                return Response(
-                    {"success": False, "message": "Failed to generate PDF"},
-                    status=500
-                )
-                
-        except AssignedDocument.DoesNotExist:
+        except ContractTemplate.DoesNotExist:
             return Response(
-                {"success": False, "message": "Contract not found"},
-                status=404
+                {"success": False, "message": "Contract template not found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
+
         except Exception as e:
             return Response(
-                {"success": False, "message": f"Error: {str(e)}"},
-                status=500
+                {"success": False, "message": f"Error creating contract: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

@@ -86,9 +86,9 @@ export const columns: ColumnDef<SalesDocument>[] = [
       const buyer = row.getValue("buyer") as SalesDocument["buyer"];
       return (
         <div className="space-y-1">
-          <div className="text-sm font-medium">{buyer.name}</div>
-          <div className="text-xs text-gray-500">{buyer.phone}</div>
-          <div className="text-xs text-gray-500">{buyer.email}</div>
+          <div className="font-medium text-sm">{buyer.name}</div>
+          <div className="text-gray-500 text-xs">{buyer.phone}</div>
+          <div className="text-gray-500 text-xs">{buyer.email}</div>
         </div>
       );
     },
@@ -102,16 +102,16 @@ export const columns: ColumnDef<SalesDocument>[] = [
       if (property.houseName) {
         return (
           <div className="space-y-1">
-            <div className="text-sm font-medium">{property.project}</div>
-            <div className="text-xs text-gray-500">{property.houseName}</div>
+            <div className="font-medium text-sm">{property.project}</div>
+            <div className="text-gray-500 text-xs">{property.houseName}</div>
           </div>
         );
       }
 
       return (
         <div className="space-y-1">
-          <div className="text-sm font-medium">{property.project}</div>
-          <div className="text-xs text-gray-500">
+          <div className="font-medium text-sm">{property.project}</div>
+          <div className="text-gray-500 text-xs">
             {[
               property.block && `Block ${property.block}`,
               property.floor && `Floor ${property.floor}`,
@@ -134,7 +134,7 @@ export const columns: ColumnDef<SalesDocument>[] = [
 
       if (!offerLetter) {
         return (
-          <div className="text-sm italic text-gray-400">No offer letter</div>
+          <div className="text-gray-400 text-sm italic">No offer letter</div>
         );
       }
 
@@ -150,13 +150,13 @@ export const columns: ColumnDef<SalesDocument>[] = [
             <Button
               variant="link"
               size="sm"
-              className="p-0 h-auto text-sm font-medium text-blue-600 hover:text-blue-800"
+              className="p-0 h-auto font-medium text-blue-600 hover:text-blue-800 text-sm"
               onClick={() => window.open(offerLetter.documentLink, "_blank")}
               title={offerLetter.documentName} // Show full name on hover
             >
               {truncatedName}
             </Button>
-            <div className="text-xs text-gray-500">
+            <div className="text-gray-500 text-xs">
               {offerLetter.status === "accepted"
                 ? `Accepted: ${formatDate(
                     new Date(row.original.updatedAt),
@@ -186,7 +186,7 @@ export const columns: ColumnDef<SalesDocument>[] = [
       const agreement = row.getValue("agreement") as SalesDocument["agreement"];
 
       if (!agreement) {
-        return <div className="text-sm italic text-gray-400">No agreement</div>;
+        return <div className="text-gray-400 text-sm italic">No agreement</div>;
       }
 
       // Truncate document name to save space
@@ -198,39 +198,16 @@ export const columns: ColumnDef<SalesDocument>[] = [
       return (
         <div className="space-y-2">
           <div className="space-y-1">
-            {agreement.documentLink && agreement.documentLink !== "#" ? (
-              <Button
-                variant="link"
-                size="sm"
-                className="p-0 h-auto text-sm font-medium text-blue-600 hover:text-blue-800"
-                onClick={() => window.open(agreement.documentLink, "_blank")}
-                title={agreement.documentName} // Show full name on hover
-              >
-                {truncatedName}
-              </Button>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500">{truncatedName}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="px-2 h-6 text-xs"
-                  onClick={async () => {
-                    try {
-                      // For contracts, PDFs are automatically generated when created
-                      // If a PDF is missing, it means there was an error during creation
-                      console.log('Contract PDFs are automatically generated when contracts are created');
-                      // You can contact support if PDFs are missing
-                    } catch (error) {
-                      console.error('Error with contract PDF:', error);
-                    }
-                  }}
-                >
-                  PDF Auto-Generated
-                </Button>
-              </div>
-            )}
-            <div className="text-xs text-gray-500">
+            <Button
+              variant="link"
+              size="sm"
+              className="p-0 h-auto font-medium text-blue-600 hover:text-blue-800 text-sm"
+              onClick={() => window.open(agreement.documentLink, "_blank")}
+              title={agreement.documentName} // Show full name on hover
+            >
+              {truncatedName}
+            </Button>
+            <div className="text-gray-500 text-xs">
               Created:{" "}
               {formatDate(new Date(row.original.createdAt), "MMM dd, yyyy")}
             </div>
@@ -259,7 +236,7 @@ export const columns: ColumnDef<SalesDocument>[] = [
 
       if (!agreement) {
         return (
-          <div className="text-sm italic text-center text-gray-400">
+          <div className="text-gray-400 text-sm text-center italic">
             No agreement to sign
           </div>
         );
@@ -269,7 +246,7 @@ export const columns: ColumnDef<SalesDocument>[] = [
 
       if (isSigned) {
         return (
-          <div className="text-xs italic text-center text-gray-500">
+          <div className="text-gray-500 text-xs text-center italic">
             Document already signed
           </div>
         );
@@ -279,7 +256,7 @@ export const columns: ColumnDef<SalesDocument>[] = [
         <div className="flex justify-center">
           <Button
             size="icon"
-            className="text-white bg-green-600 border-green-600 transition-all duration-200 hover:bg-green-700 hover:shadow-md hover:border-green-700 hover:scale-105"
+            className="bg-green-600 hover:bg-green-700 hover:shadow-md border-green-600 hover:border-green-700 text-white hover:scale-105 transition-all duration-200"
             onClick={() => {
               // TODO: Implement upload signed document functionality
               console.log("Upload signed document for:", row.original.id);

@@ -20,8 +20,8 @@ class DashboardView(APIView):
         """Get dashboard data with optional date filtering"""
         try:
             # Parse date parameters from query string
-            start_date = self._parse_date_param(request.query_params.get('start_date'))
-            end_date = self._parse_date_param(request.query_params.get('end_date'))
+            start_date = self._parse_date_param(getattr(request, 'query_params', {}).get('start_date') or request.GET.get('start_date'))
+            end_date = self._parse_date_param(getattr(request, 'query_params', {}).get('end_date') or request.GET.get('end_date'))
             
             serializer = DashboardSerializer()
             data = serializer.get_dashboard_data(start_date, end_date)

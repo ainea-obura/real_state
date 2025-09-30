@@ -15,6 +15,7 @@ import AvailabilityMatrix from './components/AvailabilityMatrix';
 import FeatureCards from './components/FeatureCards';
 import FinanceCollection from './components/FinanceCollection';
 import SalespeopleSection from './components/SalespeopleSection';
+import CommissionDashboard from '../commission/CommissionDashboard';
 
 // ---------------------------
 // Component
@@ -71,12 +72,29 @@ export default function SalesDashboard() {
     );
   }
 
-  // Show error banner if there's an error, but don't block the entire dashboard
-  const showErrorBanner = error || !dashboardData?.success;
+  // Error state
+  if (error || !dashboardData?.success) {
+    return (
+      <div className="space-y-6 p-4 md:p-6">
+        <div className="flex justify-between items-center">
+          <Header title="Sales Dashboard" description="View all sales data" />
+          <DateRangePicker />
+        </div>
+        <div className="flex justify-center items-center h-64">
+          <div className="text-red-500 text-lg">
+            {dashboardData?.message || "Failed to load dashboard data"}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // Extract data from API response with fallbacks
-  const { feature_cards, finance_collection, salespeople } =
-    dashboardData.data || {};
+  // Extract data from API response
+  const { feature_cards, finance_collection, salespeople } = dashboardData?.data || {
+    feature_cards: { total_listings: 0, sold_units: 0, total_revenue: 0, outstanding_payments: 0 },
+    finance_collection: { series: [] },
+    salespeople: []
+  };
 
   // Pricing bands per floor based on your price list image
   const priceBands: {
@@ -474,22 +492,6 @@ export default function SalesDashboard() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      {/* Error Banner - only show if there's an error */}
-      {showErrorBanner && (
-        <div className="bg-red-50 p-4 border border-red-200 rounded-lg">
-          <div className="flex items-center gap-2 text-red-800">
-            <AlertCircle className="w-5 h-5" />
-            <div>
-              <span className="font-medium">Dashboard Data Unavailable</span>
-              <p className="mt-1 text-red-600 text-sm">
-                {dashboardData?.message ||
-                  "Failed to load dashboard data. Some features may be limited."}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="flex justify-between items-center">
         <Header title="Sales Dashboard" description="View all sales data" />
         <div className="flex items-center gap-2">
@@ -524,6 +526,14 @@ export default function SalesDashboard() {
       <FeatureCards
         startDate={dateRange.from?.toISOString().split("T")[0]}
         endDate={dateRange.to?.toISOString().split("T")[0]}
+      />
+
+      {/* Commission Dashboard */}
+      <CommissionDashboard 
+        dateRange={{
+          from: dateRange.from,
+          to: dateRange.to
+        }} 
       />
 
       {/* Finance Collection */}

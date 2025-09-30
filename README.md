@@ -1,42 +1,36 @@
-# HoyHub - Real Estate Management System
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A comprehensive real estate management platform built with modern technologies.
+## Getting Started
 
-## 🚀 Quick Start
+First, run the development server:
 
 ```bash
-# Frontend
-cd app && npm install && npm run dev
-
-# Backend  
-cd server && pip install pdm && pdm install && python manage.py runserver
-
-# Mobile
-cd mobile && flutter pub get && flutter run
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## 📚 Documentation
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-**Complete documentation is available in the [`docs/`](./docs/) folder:**
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-- [Project Overview](./docs/README.md) - System architecture and setup
-- [Frontend Guide](./docs/frontend/README.md) - Next.js development
-- [Backend Guide](./docs/backend/README.md) - Django API development  
-- [Mobile Guide](./docs/mobile/README.md) - Flutter app development
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## 🏗️ Tech Stack
+## Learn More
 
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Django 5, Python 3.13, PostgreSQL, Redis
-- **Mobile**: Flutter 3.8, Dart, GetX
-- **Infrastructure**: Docker, MinIO, Celery
+To learn more about Next.js, take a look at the following resources:
 
-## 🔗 Links
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-- **Live App**: [Frontend](http://localhost:3000) | [Backend](http://localhost:8000)
-- **API Docs**: [Swagger UI](http://localhost:8000/api/schema/swagger-ui/)
-- **Documentation**: [Docusaurus Site](./documentation/)
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
----
+## Deploy on Vercel
 
-*Built by Mansuur Abdullahi (mruus) & Mohamud Ali Abshir (mhbaando)*
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

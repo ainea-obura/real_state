@@ -156,9 +156,14 @@ const CreatePaymentModal = ({ open, onClose }: CreatePaymentModalProps) => {
     queryFn: async () => {
       // For now, we'll keep the paybill/buygoods logic but it should be updated
       // to work with account selection instead of payment method
-      return { error: false, data: [] };
+      //return { error: false, data: [] };
+    //},
+    //enabled: false, // Disabled for now as we're replacing payment method with accounts
+     return await fetchInstantPaymentNotifications({
+        search_query: transactionSearchQuery
+      });
     },
-    enabled: false, // Disabled for now as we're replacing payment method with accounts
+    enabled: formData.selectedAccount === "paybill/buygoods",
   });
 
   // Update transactions when API data changes

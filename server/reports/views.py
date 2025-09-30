@@ -17,6 +17,9 @@ from .utils import (
     get_services_report_data,
     get_service_summary_report_data,
     parse_date_param,
+    get_profit_loss_data,
+    get_cash_flow_data,
+    get_balance_sheet_data,
 )
 
 
@@ -233,3 +236,153 @@ class ServicesReportView(APIView):
                 "data": report_data,
             }
         )
+
+
+class ProfitLossReportView(APIView):
+    """
+    DRF View for Profit and Loss Report
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Get Profit and Loss report data
+        """
+        try:
+            # Get date range from request
+            date_from_str = request.query_params.get("date_from")
+            date_to_str = request.query_params.get("date_to")
+
+            if date_from_str:
+                date_from = parse_date_param(date_from_str)
+            else:
+                date_from = (
+                    timezone.now().date().replace(day=1)
+                )  # First day of current month
+
+            if date_to_str:
+                date_to = parse_date_param(date_to_str)
+            else:
+                date_to = timezone.now().date()
+
+            # Get profit and loss data
+            report_data = get_profit_loss_data(date_from, date_to)
+
+            return Response(
+                {
+                    "error": False,
+                    "message": "Profit and Loss report fetched successfully",
+                    "data": report_data,
+                }
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": True,
+                    "message": f"Error fetching Profit and Loss report: {str(e)}",
+                    "data": None,
+                },
+                status=500,
+            )
+
+
+class CashFlowReportView(APIView):
+    """
+    DRF View for Cash Flow Report
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Get Cash Flow report data
+        """
+        try:
+            # Get date range from request
+            date_from_str = request.query_params.get("date_from")
+            date_to_str = request.query_params.get("date_to")
+
+            if date_from_str:
+                date_from = parse_date_param(date_from_str)
+            else:
+                date_from = (
+                    timezone.now().date().replace(day=1)
+                )  # First day of current month
+
+            if date_to_str:
+                date_to = parse_date_param(date_to_str)
+            else:
+                date_to = timezone.now().date()
+
+            # Get cash flow data
+            report_data = get_cash_flow_data(date_from, date_to)
+
+            return Response(
+                {
+                    "error": False,
+                    "message": "Cash Flow report fetched successfully",
+                    "data": report_data,
+                }
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": True,
+                    "message": f"Error fetching Cash Flow report: {str(e)}",
+                    "data": None,
+                },
+                status=500,
+            )
+
+
+class BalanceSheetReportView(APIView):
+    """
+    DRF View for Balance Sheet Report
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Get Balance Sheet report data
+        """
+        try:
+            # Get date range from request
+            date_from_str = request.query_params.get("date_from")
+            date_to_str = request.query_params.get("date_to")
+
+            if date_from_str:
+                date_from = parse_date_param(date_from_str)
+            else:
+                date_from = (
+                    timezone.now().date().replace(day=1)
+                )  # First day of current month
+
+            if date_to_str:
+                date_to = parse_date_param(date_to_str)
+            else:
+                date_to = timezone.now().date()
+
+            # Get balance sheet data
+            report_data = get_balance_sheet_data(date_from, date_to)
+
+            return Response(
+                {
+                    "error": False,
+                    "message": "Balance Sheet report fetched successfully",
+                    "data": report_data,
+                }
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": True,
+                    "message": f"Error fetching Balance Sheet report: {str(e)}",
+                    "data": None,
+                },
+                status=500,
+            )

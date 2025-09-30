@@ -26,16 +26,14 @@ class FeatureCardView(APIView):
                 "message": "Feature card data retrieved successfully",
                 "data": {
                     "feature_cards": {
-                        "total_sales_value": data[
-                            "total_sales_value"
-                        ],  # Already formatted string
+                        "total_listings": data["total_listings"],
+                        "sold_units": data["sold_units"],
+                        "total_revenue": data["total_revenue"],
+                        "outstanding_payments": data["outstanding_payments"],
+                        # Keep original fields for backward compatibility
+                        "total_sales_value": data["total_sales_value"],
                         "active_payment_plans": data["active_payment_plans"],
-                        "outstanding_payments": data[
-                            "outstanding_payments"
-                        ],  # Already formatted string
-                        "commission_due": data[
-                            "commission_due"
-                        ],  # Already formatted string
+                        "commission_due": data["commission_due"],
                     },
                     "additional_metrics": {
                         "overdue_payments_count": data["overdue_payments_count"],

@@ -1,6 +1,6 @@
 import { Delete02Icon } from 'hugeicons-react';
 import { useSetAtom } from 'jotai';
-import { Edit, Eye, Mail, MapPin, Phone, User } from 'lucide-react';
+import { Edit, Eye, Mail, MapPin, Phone, User, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,9 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { PermissionGate } from '@/components/PermissionGate';
 import AllocateTenantModal from "./AllocateTenantModal";
+import { deleteTenantWithValidation } from "@/actions/clients";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 import type { ClientDetail } from "@/features/clients/types";
 
@@ -67,6 +70,7 @@ const ActionButtons = ({ row, triggerVerificationTab = false }: { row: any, trig
   const setSelectedTenant = useSetAtom(selectedTenantAtom);
   const [allocateModalOpen, setAllocateModalOpen] = React.useState(false);
   const [allocateTenant, setAllocateTenant] = React.useState<any>(null);
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     if (triggerVerificationTab) {
@@ -107,6 +111,28 @@ const ActionButtons = ({ row, triggerVerificationTab = false }: { row: any, trig
     // TODO: Implement allocation logic
     console.log("Allocating tenant", allocation);
     setAllocateModalOpen(false);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm(`Are you sure you want to delete ${row.original.first_name} ${row.original.last_name}? This action cannot be undone.`)) {
+      try {
+        const result = await deleteTenantWithValidation(row.original.id);
+        if (result.isError) {
+          toast.error(result.message);
+        } else {
+          toast.success(result.message);
+          // Invalidate tenant queries to refresh the list
+          queryClient.invalidateQueries({ 
+            predicate: (query) => {
+              const queryKey = query.queryKey;
+              return Array.isArray(queryKey) && queryKey[0] === "tenants";
+            }
+          });
+        }
+      } catch (error) {
+        toast.error("Failed to delete tenant");
+      }
+    }
   };
 
   return (
@@ -154,6 +180,20 @@ const ActionButtons = ({ row, triggerVerificationTab = false }: { row: any, trig
             </PermissionGate>
             <TooltipContent side="left">
               <p>Allocate Tenant</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <PermissionGate codename="delete_tenant" showFallback={false}>
+              <TooltipTrigger
+                onClick={handleDelete}
+                className="flex justify-center items-center w-8 h-8 rounded-md transition-all duration-300 cursor-pointer group bg-red-50 hover:bg-red-500 hover:text-white"
+              >
+                <Trash2 className="w-[18px] h-[18px] text-red-500 group-hover:text-white transition-all duration-300" />
+                <span className="sr-only">Delete Tenant</span>
+              </TooltipTrigger>
+            </PermissionGate>
+            <TooltipContent side="left">
+              <p>Delete Tenant</p>
             </TooltipContent>
           </Tooltip>
         </div>

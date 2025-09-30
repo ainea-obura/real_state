@@ -1,9 +1,9 @@
 // middleware.ts
 
-import { getToken } from "next-auth/jwt";
-import { NextResponse } from "next/server";
+import { getToken } from 'next-auth/jwt';
+import { NextResponse } from 'next/server';
 
-import { validateVerificationParams } from "@/lib/verification";
+import { validateVerificationParams } from '@/lib/verification';
 
 import type { NextRequest } from "next/server";
 /**
@@ -119,6 +119,10 @@ export async function middleware(req: NextRequest) {
     const expectedType = PROTECTED_VERIFICATION_PAGES[pathname];
     const token = req.nextUrl.searchParams.get("token");
 
+    console.log(
+      `[Middleware] Validating access to protected page: ${pathname}`
+    );
+
     // Special case: Allow authenticated users without companies to access /create-company
     if (pathname === "/create-company") {
       try {
@@ -130,10 +134,16 @@ export async function middleware(req: NextRequest) {
 
         // If user is authenticated but has no company, allow access without token
         if (authToken?.accessToken && !authToken.company) {
+          console.log(
+            `[Middleware] Allowing authenticated user without company to access /create-company`
+          );
           return NextResponse.next();
         }
-      } catch {
-        // Silent error handling
+      } catch (error) {
+        console.log(
+          `[Middleware] Auth token check failed for /create-company:`,
+          error
+        );
       }
     }
 
@@ -141,6 +151,10 @@ export async function middleware(req: NextRequest) {
       const validation = await validateVerificationParams(token, expectedType);
 
       if (!validation.valid) {
+        console.log(
+          `[Middleware] Invalid token for ${pathname}: ${validation.error}`
+        );
+
         // For invalid/expired verification tokens, redirect to sign-in without the verification URL as callback
         // This prevents redirect loops
         const signInUrl = new URL("/sign-in", baseUrl);
@@ -156,9 +170,13 @@ export async function middleware(req: NextRequest) {
         return res;
       }
 
+      console.log(`[Middleware] Valid token for ${pathname}, allowing access`);
       return NextResponse.next();
-    } catch {
-      // Silent error handling
+    } catch (error) {
+      console.log(
+        `[Middleware] Token validation failed for ${pathname}:`,
+        error
+      );
 
       // For validation errors, redirect to sign-in without the verification URL as callback
       const signInUrl = new URL("/sign-in", baseUrl);
@@ -185,7 +203,11 @@ export async function middleware(req: NextRequest) {
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: process.env.NODE_ENV === "production",
     })) as AuthToken | null;
-  } catch {
+  } catch (error) {
+    console.log(
+      `[Middleware] JWT validation failed:`,
+      error instanceof Error ? error.message : String(error)
+    );
     return redirectToSignIn();
   }
 
@@ -198,7 +220,6 @@ export async function middleware(req: NextRequest) {
     typeof token.expiresAt === "string"
       ? parseInt(token.expiresAt, 10)
       : token.expiresAt;
-
   if (expiresAt && Date.now() > expiresAt) {
     return redirectToSignIn("SessionExpired");
   }

@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema, OpenApiExample
-from django.core.files.base import ContentFile
 
 from sales.models import AssignedDocument
 from .offer_letter_search_serializer import (
@@ -189,61 +188,4 @@ class OfferLetterSearchView(APIView):
                     "message": f"Error listing offer letters: {str(e)}",
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    def post(self, request):
-        """Regenerate PDF for existing offer letter"""
-        try:
-            offer_letter_id = request.data.get('offer_letter_id')
-            if not offer_letter_id:
-                return Response(
-                    {"error": True, "message": "offer_letter_id is required"},
-                    status=400
-                )
-            
-            # Get the offer letter
-            offer_letter = AssignedDocument.objects.get(
-                id=offer_letter_id,
-                document_type="offer_letter"
-            )
-            
-            # Check if it already has a PDF
-            if offer_letter.document_file:
-                return Response(
-                    {"error": False, "message": "PDF already exists", "url": offer_letter.document_file.url},
-                    status=200
-                )
-            
-            # Generate PDF using the serializer logic
-            from .offer_letter_serializer import OfferLetterSerializer
-            serializer = OfferLetterSerializer()
-            
-            # Generate PDF
-            pdf_bytes = serializer.generate_offer_letter_pdf(offer_letter, offer_letter.template)
-            
-            if pdf_bytes:
-                # Save PDF to document_file field
-                filename = f"offer_letter_{offer_letter.property_node.name}_{offer_letter.buyer.get_full_name().replace(' ', '_')}.pdf"
-                offer_letter.document_file.save(filename, ContentFile(pdf_bytes), save=False)
-                offer_letter.save()
-                
-                return Response(
-                    {"error": False, "message": "PDF generated successfully", "url": offer_letter.document_file.url},
-                    status=200
-                )
-            else:
-                return Response(
-                    {"error": True, "message": "Failed to generate PDF"},
-                    status=500
-                )
-                
-        except AssignedDocument.DoesNotExist:
-            return Response(
-                {"error": True, "message": "Offer letter not found"},
-                status=404
-            )
-        except Exception as e:
-            return Response(
-                {"error": True, "message": f"Error: {str(e)}"},
-                status=500
             )
