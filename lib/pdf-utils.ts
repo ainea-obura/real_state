@@ -212,3 +212,5 @@ export const generateBalanceSheetPDF = (data: any) => {
   const generator = new PDFGenerator();
   generator.generateBalanceSheetReport(data);
 };
+
+

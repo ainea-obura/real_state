@@ -74,3 +74,4 @@ export const bulkUploadTransactions = async (
 
   return data;
 };
+

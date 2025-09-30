@@ -144,3 +144,5 @@ class Command(BaseCommand):
                 f"🎉 You can now test KYC upload with direct SasaPay integration!"
             )
         )
+
+

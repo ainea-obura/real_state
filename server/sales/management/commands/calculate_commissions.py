@@ -115,3 +115,5 @@ class Command(BaseCommand):
                 self.style.ERROR(f'Error processing sale {sale.id}: {str(e)}')
             )
             return False
+
+
