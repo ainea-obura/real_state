@@ -39,7 +39,7 @@ export const PropertyAssignmentSchema = z.object({
   floor: z.string().optional(),
   block: z.string().optional(),
   contract_start: z.string(),
-  contract_end: z.string().optional(),
+  contract_end: z.string().nullable().optional(),
   rent_amount: z.number(),
   currency: z.string(),
   created_at: z.string(),

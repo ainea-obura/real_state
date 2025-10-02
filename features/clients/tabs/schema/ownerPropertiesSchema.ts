@@ -5,7 +5,7 @@ export const CurrentTenantSchema = z.object({
   id: z.string(),
   name: z.string(),
   contract_start: z.string(),
-  contract_end: z.string(),
+  contract_end: z.string().nullable(),
   rent_amount: z.string(),
 });
 

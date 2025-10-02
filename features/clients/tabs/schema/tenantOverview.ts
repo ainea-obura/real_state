@@ -21,7 +21,7 @@ export const TenantLeaseSummarySchema = z.object({
   deposit: z.string(),
   currency: z.string(),
   contract_start: z.string(), // ISO date
-  contract_end: z.string(),   // ISO date
+  contract_end: z.string().nullable(),   // ISO date
 });
 
 // Penalty

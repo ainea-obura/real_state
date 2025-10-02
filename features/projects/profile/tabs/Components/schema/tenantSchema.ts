@@ -34,7 +34,7 @@ export const TenantAssignmentSchema = z.object({
   tenant_user_id: z.string(),
   tenant_user: TenantUserSchema,
   contract_start: z.string(),
-  contract_end: z.string(),
+  contract_end: z.string().nullable(),
   rent_amount: z.string(),
 });
 
@@ -42,7 +42,7 @@ export const TenantAssignmentCreateInputSchema = z.object({
   node: z.string(), // node id
   tenant_user: z.string(), // user id
   contract_start: z.string(),
-  contract_end: z.string(),
+  contract_end: z.string().nullable(),
   rent_amount: z.string(),
 });
 
@@ -50,7 +50,7 @@ export const TenantAssignmentUpdateInputSchema = z.object({
   node: z.string().optional(),
   tenant_user: z.string().optional(),
   contract_start: z.string().optional(),
-  contract_end: z.string().optional(),
+  contract_end: z.string().nullable().optional(),
   rent_amount: z.string().optional(),
 });
 
