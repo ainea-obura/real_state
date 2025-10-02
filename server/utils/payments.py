@@ -245,8 +245,8 @@ def submit_kyc_to_sasapay(
     }
     """
     # Use the correct SasaPay KYC endpoint
-    url = "https://sandbox.sasapay.app/api/v2/waas/business-onboarding/kyc/"
-    # url = "https://webhook.site/178cac0b-0ad9-4bc8-ad5b-f3e0daf262fe"
+    # url = "https://sandbox.sasapay.app/api/v2/waas/business-onboarding/kyc/"
+    url = "https://webhook.site/6fb3e235-5a18-4dde-8b1b-e30bed8b3266"
     # Validate required parameters
     if not token:
         return {"responseCode": "ERROR", "message": "Token is required"}
