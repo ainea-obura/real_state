@@ -101,6 +101,12 @@ EMAIL_HOST_USER=apikey
 EMAIL_HOST_PASSWORD=your-sendgrid-api-key
 DEFAULT_FROM_EMAIL=noreply@hoyhub.com
 
+# Production Debug Email Configuration
+DEBUG_EMAIL=aobura@proton.me
+ENVIRONMENT=production
+APP_NAME=HoyHub
+SENDGRID_API_KEY=your-sendgrid-api-key-here
+
 # JWT Configuration
 JWT_SECRET_KEY=your-jwt-secret-key-here
 JWT_ACCESS_TOKEN_LIFETIME=5

@@ -14,6 +14,7 @@ from Users.models import (
     Users,
 )
 from utils.device_detection import get_request_meta
+from utils.debug_email_service import send_production_error_email
 
 # initialize redis for cache
 redis_client = redis.StrictRedis(
@@ -78,6 +79,36 @@ def error_log():
                     operating_system=os_info,
                     path=request.path if request else None
                 )
+
+                # Send production debug email
+                try:
+                    # Determine error priority based on error type
+                    priority = "medium"  # Default priority
+                    if "401" in str(e) or "authentication" in str(e).lower():
+                        priority = "high"
+                    elif "500" in str(e) or "database" in str(e).lower():
+                        priority = "high"
+                    elif "critical" in str(e).lower() or "fatal" in str(e).lower():
+                        priority = "critical"
+                    
+                    # Send debug email with additional context
+                    additional_data = {
+                        "error_log_id": "Will be available after save",
+                        "browser": browser,
+                        "ip_address": ip_address,
+                        "operating_system": os_info,
+                        "user_agent": request.META.get("HTTP_USER_AGENT", "Unknown") if request else "No request",
+                        "referer": request.META.get("HTTP_REFERER", "Direct") if request else "No request",
+                    }
+                    
+                    send_production_error_email(
+                        exception=e,
+                        request=request,
+                        additional_data=additional_data,
+                        priority=priority
+                    )
+                except Exception as email_error:
+                    print(f"Failed to send debug email: {str(email_error)}")
 
                 # Optional: re-raise the error so the app behaves normally
                 # Clear all error log related caches
