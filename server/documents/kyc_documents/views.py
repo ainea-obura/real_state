@@ -301,7 +301,7 @@ class KYCUploadView(APIView):
         })
 
     def _create_document_record(self, company, submission, document_type, file, director_number=None):
-        """Create database record for document without storing file locally"""
+        """Create database record for document WITHOUT storing file in MinIO"""
         import mimetypes
         
         # Get content type from file extension
@@ -316,18 +316,20 @@ class KYCUploadView(APIView):
             existing_document = KYCDocument.objects.get(
                 company=company, document_type=document_type
             )
-            # Update existing document
+            # Update existing document WITHOUT storing file
             existing_document.kyc_submission = submission
             existing_document.status = "pending"
             existing_document.file_name = file.name.split("/")[-1]
             existing_document.file_size = file.size
             existing_document.file_type = content_type
+            # DO NOT set document_file - keep it None for direct upload
+            existing_document.document_file = None
             if director_number is not None:
                 existing_document.director_number = director_number
             existing_document.save()
             return existing_document
         except KYCDocument.DoesNotExist:
-            # Create new document
+            # Create new document WITHOUT storing file
             document = KYCDocument.objects.create(
                 company=company,
                 document_type=document_type,
@@ -337,6 +339,8 @@ class KYCUploadView(APIView):
                 file_size=file.size,
                 file_type=content_type,
                 director_number=director_number,
+                # DO NOT set document_file - keep it None for direct upload
+                document_file=None,
             )
             return document
 
@@ -462,21 +466,55 @@ class KYCDocumentUpdateView(APIView):
                     or "application/octet-stream"
                 )
 
-                # Delete the old file if it exists
-                if document.document_file:
-                    try:
-                        document.document_file.delete(save=False)
-                    except Exception as e:
-                        # Log the error but continue with the update
-                        pass
-
-                # Update the document file and details
-                document.document_file = file
+                # For direct upload, we don't store files in MinIO
+                # Just update the metadata and send directly to SasaPay
                 document.status = "pending"  # Reset status to pending
                 document.file_name = file.name.split("/")[-1]
                 document.file_size = file.size
                 document.file_type = content_type
+                # DO NOT set document_file - keep it None for direct upload
+                document.document_file = None
                 document.save()
+                
+                # Send updated document directly to SasaPay
+                from utils.payments import submit_kyc_to_sasapay
+                from payments.payment import token
+                
+                get_token = token()
+                if get_token:
+                    # Get merchant code from business onboarding
+                    business_onboarding = document.company.business_onboardings.first()
+                    if business_onboarding and business_onboarding.merchant_code:
+                        # Prepare single document for SasaPay
+                        document_mapping = {
+                            "kra_pin": "businessKraPin",
+                            "certificate_of_incorporation": "businessRegistrationCertificate",
+                            "board_resolution": "boardResolution",
+                            "proof_of_address": "proofOfAddressDocument",
+                            "bank_confirmation_letter": "proofOfBankDocument",
+                            "cr12": "cr12Document",
+                            "tax_compliance_certificate": "taxComplianceCertificate",
+                        }
+                        
+                        sasapay_field = document_mapping.get(document.document_type)
+                        if sasapay_field:
+                            company_document_files = {sasapay_field: file}
+                            
+                            api_response = submit_kyc_to_sasapay(
+                                token=get_token,
+                                merchantCode=business_onboarding.merchant_code,
+                                requestId=str(document.company.id),
+                                businessKraPin=company_document_files.get("businessKraPin"),
+                                businessRegistrationCertificate=company_document_files.get("businessRegistrationCertificate"),
+                                boardResolution=company_document_files.get("boardResolution"),
+                                proofOfAddressDocument=company_document_files.get("proofOfAddressDocument"),
+                                proofOfBankDocument=company_document_files.get("proofOfBankDocument"),
+                                cr12Document=company_document_files.get("cr12Document"),
+                                taxComplianceCertificate=company_document_files.get("taxComplianceCertificate"),
+                                directorsKyc=[],
+                            )
+                            
+                            print(f"SasaPay update response: {api_response}")
 
                 # Update submission status
                 if document.kyc_submission:
@@ -504,10 +542,29 @@ class KYCCompanyDocumentsView(APIView):
 
     def get(self, request, company_id):
         """Get KYC documents for a company with submission details"""
-        company = get_object_or_404(Company, id=company_id)
-
-        serializer = KYCCompanyDocumentsSerializer(company)
-        return Response({"data": serializer.data})
+        try:
+            company = get_object_or_404(Company, id=company_id)
+            
+            # Try to serialize the company data
+            serializer = KYCCompanyDocumentsSerializer(company)
+            return Response({"data": serializer.data})
+            
+        except Exception as e:
+            # Log the error for debugging
+            print(f"KYC Company Documents Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            
+            # Return a safe error response
+            return Response({
+                "error": True,
+                "message": f"Unable to load KYC documents: {str(e)}",
+                "data": {
+                    "company_name": company.name if 'company' in locals() else "Unknown",
+                    "documents_count": 0,
+                    "submission_status": "error"
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class KYCSasaPaySubmissionView(APIView):

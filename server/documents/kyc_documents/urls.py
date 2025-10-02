@@ -5,6 +5,8 @@ from .views import (
     KYCCompanyDocumentsView,
     KYCSasaPaySubmissionView,
 )
+from .clear_kyc_view import ClearKYCDocumentsView
+from .debug_kyc_view import DebugKYCView
 
 app_name = "kyc_documents"
 
@@ -32,5 +34,17 @@ urlpatterns = [
         "companies/<uuid:company_id>/submit-to-sasapay/",
         KYCSasaPaySubmissionView.as_view(),
         name="submit-to-sasapay",
+    ),
+    # Clear all KYC documents for a company
+    path(
+        "companies/<uuid:company_id>/clear-documents/",
+        ClearKYCDocumentsView.as_view(),
+        name="clear-kyc-documents",
+    ),
+    # Debug KYC documents
+    path(
+        "companies/<uuid:company_id>/debug/",
+        DebugKYCView.as_view(),
+        name="debug-kyc-documents",
     ),
 ]

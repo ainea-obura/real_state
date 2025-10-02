@@ -54,6 +54,8 @@ class KYCDocumentSerializer(serializers.ModelSerializer):
             "is_director_document",
             "director_number",
             "director_document_type",
+            # Direct upload field
+            "is_direct_upload",
         ]
         read_only_fields = [
             "id",
@@ -73,6 +75,7 @@ class KYCDocumentSerializer(serializers.ModelSerializer):
             "previous_version",
             "created_at",
             "updated_at",
+            "is_direct_upload",
         ]
 
     def get_file_size_mb(self, obj):
@@ -92,6 +95,33 @@ class KYCDocumentSerializer(serializers.ModelSerializer):
             if len(parts) >= 4:
                 return "_".join(parts[2:])  # id_card_front, id_card_back, kra_pin
         return None
+
+    def to_representation(self, instance):
+        """Custom representation to handle direct upload (no local file storage)"""
+        try:
+            data = super().to_representation(instance)
+            
+            # For direct upload, document_file is None but we still have metadata
+            if instance.document_file is None and instance.file_name:
+                # Create a placeholder URL or indicate direct upload
+                data['document_file'] = f"direct_upload://{instance.file_name}"
+                data['is_direct_upload'] = True
+            else:
+                data['is_direct_upload'] = False
+                
+            return data
+        except Exception as e:
+            # Fallback if serialization fails
+            return {
+                "id": str(instance.id),
+                "document_type": instance.document_type,
+                "file_name": instance.file_name or "Unknown",
+                "file_size": instance.file_size or 0,
+                "status": instance.status,
+                "document_file": None,
+                "is_direct_upload": True,
+                "error": str(e)
+            }
 
     def validate_document_file(self, value):
         """Validate file size and type"""
